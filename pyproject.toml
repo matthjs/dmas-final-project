@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "dmas-final-project"
+version = "0.1.0"
+description = ""
+authors = ["Matthijs <matthijs.vanderlende@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+mesa = "^2.3.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
