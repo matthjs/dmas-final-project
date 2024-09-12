@@ -8,8 +8,7 @@
 
 ## About The Project
 
-Initial proposal:
-Explanation of Idea:
+Initial proposal/explanation of idea:
 We want to create a bidirectional interaction model between users and news self-media, considering how user evaluations or complaints affect news self-media and other users opinions;
 
 The proposed idea involves developing a model where interactions between users and media are not just one-directional (from media to users) but bidirectional. This means that users reactions to media content (like evaluations or complaints) would also influence how media agents behave and adjust their content in future interactions. 
