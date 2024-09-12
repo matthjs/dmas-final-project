@@ -1,13 +1,23 @@
 <br />
 <p align="center">
-  <h1 align="center">Project - Insert Project Title Here</h1>
+  <h1 align="center">Project - Agent-Based Modelling of News Media Feedback Dynamics and Opinion Polarization in Social Networks [Tentative Tile]</h1>
 
   <p align="center">
   </p>
 </p>
 
 ## About The Project
-This project is about TODO
+
+Initial proposal:
+Explanation of Idea:
+We want to create a bidirectional interaction model between users and news self-media, considering how user evaluations or complaints affect news self-media and other users opinions;
+
+The proposed idea involves developing a model where interactions between users and media are not just one-directional (from media to users) but bidirectional. This means that users reactions to media content (like evaluations or complaints) would also influence how media agents behave and adjust their content in future interactions. 
+
+User Feedback Influences Media: When users react to news content, whether through likes, shares, comments, or direct feedback, these actions would be factored back into how the media agents decide on what content to publish next. For instance, if many users complain about a particular bias in news reporting, the media might adjust to offer more balanced content.
+
+Impact on Other Users: Additionally, the model would explore how the changes in media behavior, prompted by user feedback, affect the opinions of other users in the network. This reflects the real-world scenario where media evolution based on audience feedback can alter the broader public perception and discourse.
+
 
 ## Getting started
 
