@@ -22,7 +22,7 @@ class UserAgent(Agent):
         super().__init__(unique_id, model)
         self.opinion = np.random.uniform(-1, 1, opinion_dims)  # Multi-dimensional opinion vector
         self.rationality = rationality  # Affects how opinions are updated
-        self.affective_involvement = affective_involvement  # Affects resistance to opinion change
+        self.affective_involvement = affective_involvement  # Affects resistance to opinion change the higher, the less change
         self.is_guided = False  # Indicates if the agent is under opinion guidance
 
     def compute_similarity(self, other_opinion: np.ndarray) -> float:
@@ -37,6 +37,8 @@ class UserAgent(Agent):
         similarity = dot_product / norm_product if norm_product != 0 else 0
         return max(0, similarity)
 
+    #BB: will we implement a difference between directional and proximity voting?
+
     def step(self) -> None:
         """
         Update agent's opinion based on interactions with neighboring agents.
@@ -46,15 +48,12 @@ class UserAgent(Agent):
             if hasattr(neighbor, 'bias'):  # Check if the neighbor has a 'bias' attribute
                 # Update opinion based on news bias and rationality
                 self.opinion += self.rationality * (neighbor.bias - self.opinion)
+                #BB: will we add a similarity treshold for media? if so, maybe if statements are unnecessary, same method for everything
             elif isinstance(neighbor, UserAgent):
                 similarity = self.compute_similarity(neighbor.opinion)
-                if similarity > (1 - self.affective_involvement):  # Similar enough to interact
+                if similarity > self.affective_involvement:  # Similar enough to interact
                     # Cognitive dissonance adjustment
                     self.opinion += self.rationality * (neighbor.opinion - self.opinion)
 
         # Normalize opinion to [-1, 1] range
         self.opinion = np.clip(self.opinion, -1, 1)
-
-        # If agent is guided, steer opinions to neutral zone
-        if self.is_guided:
-            self.opinion = np.clip(self.opinion, -0.2, 0.2)
