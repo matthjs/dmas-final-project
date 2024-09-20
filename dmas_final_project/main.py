@@ -73,9 +73,9 @@ def visualize_social_network(model):
 
 
 def main() -> None:
-    # Define model parameters
-    num_users = 100  # Number of user agents
-    num_official_media = 5  # Number of official news agents
+    # Hardcoded model parameters for now.
+    num_users = 50  # Number of user agents
+    num_official_media = 1  # Number of official news agents
     num_self_media = 5  # Number of self-news agents
     opinion_dims = 5  # Number of opinion dimensions (multi-dimensional opinion space)
 
