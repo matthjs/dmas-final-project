@@ -102,6 +102,7 @@ class NewsMediaModel(Model):
 
         :return: Feedback vector for adjusting news bias.
         """
+        # ML: This will need to be adjusted to correspond exactly with the formulation in the methodology.
         opinions = np.array([agent.opinion for agent in self.schedule.agents if isinstance(agent, UserAgent)])
         feedback = np.mean(opinions, axis=0) if len(opinions) > 0 else np.zeros(self.opinion_dims)
         return feedback - 0.5  # Center feedback around 0
@@ -112,6 +113,7 @@ class NewsMediaModel(Model):
 
         :return: List of triangular motifs with high similarity and rationality.
         """
+        # ML: This may need to be adjusted.
         motifs = []
         # Only consider UserAgents for motif recognition
         user_agents = [a for a in self.schedule.agents if isinstance(a, UserAgent)]
