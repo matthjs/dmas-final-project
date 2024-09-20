@@ -69,12 +69,13 @@ class NewsMediaModel(Model):
         for i in range(self.num_users):
             rationality = random.uniform(0.1, 1)
             affective_involvement = random.uniform(0.0, 1)
+            #BB: why does rationality start at 0.1 and AffInv at 0.0?
             user = UserAgent(i, self, self.opinion_dims, rationality, affective_involvement)
             self.schedule.add(user)
             self.G.nodes[i]['agent'] = user
 
         for i in range(self.num_official_media):
-            bias = np.random.uniform(-1, 1, self.opinion_dims)
+            bias = [0] * self.opinion_dims
             official_media = OfficialNewsAgent(i + self.num_users, self, bias)
             self.schedule.add(official_media)
             self.G.nodes[i + self.num_users]['agent'] = official_media
@@ -142,6 +143,8 @@ class NewsMediaModel(Model):
         for motif in motifs:
             for agent in motif:
                 agent.is_guided = True  # Mark agents in motifs as under guidance
+
+    #BB: do we still even want to implement guidance?
 
     def step(self) -> None:
         """
