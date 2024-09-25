@@ -9,7 +9,7 @@ class UserAgent(Agent):
     """
 
     def __init__(self, unique_id: int, model: Model, opinion_dims: int, rationality: float,
-                 affective_involvement: float) -> None:
+                 affective_involvement: float, tolerance_threshold: float) -> None:
         """
         Initialize a UserAgent.
 
@@ -23,6 +23,7 @@ class UserAgent(Agent):
         self.opinion = np.random.uniform(-1, 1, opinion_dims)  # Multi-dimensional opinion vector
         self.rationality = rationality  # Affects how opinions are updated
         self.affective_involvement = affective_involvement  # Affects resistance to opinion change the higher, the less change
+        self.tolerance_threshold = tolerance_threshold
         self.is_guided = False  # Indicates if the agent is under opinion guidance
 
     def compute_similarity(self, other_opinion: np.ndarray) -> float:
@@ -35,9 +36,8 @@ class UserAgent(Agent):
         dot_product = np.dot(self.opinion, other_opinion)
         norm_product = np.linalg.norm(self.opinion) * np.linalg.norm(other_opinion)
         similarity = dot_product / norm_product if norm_product != 0 else 0
-        return max(0, similarity)
+        return max(0, similarity) 
 
-    #BB: will we implement a difference between directional and proximity voting?
 
     def step(self) -> None:
         """

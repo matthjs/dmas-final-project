@@ -8,19 +8,24 @@ class OfficialNewsAgent(Agent):
     Represents official news media with fixed bias.
     """
 
-    def __init__(self, unique_id: int, model: Model, bias: np.ndarray) -> None:
+    def __init__(self, unique_id: int, model: Model, opinion_dims: int) -> None:
         """
         Initialize an OfficialNewsAgent.
 
         :param unique_id: Unique identifier for the agent.
         :param model: The model instance.
-        :param bias: Initial multi-dimensional bias vector of the news.
+        :param opinion_dims: Dimensionality of the opinion space.
         """
         super().__init__(unique_id, model)
-        self.bias = bias  # Multi-dimensional bias vector
+        self.news = np.zeros(opinion_dims)
 
     def step(self) -> None:
         """
         Adjust news bias based on aggregated user feedback.
         """
-        pass
+        neighbors = self.model.get_neighbors(self)
+        for neighbor in neighbors:
+            if isinstance(neighbor, UserAgent):
+                neighbor.opinion += neighbor.rationality * (self.news - neighbor.opinion)
+                neighbor.opinion = np.clip(neighbor.opinion, -1, 1)
+
