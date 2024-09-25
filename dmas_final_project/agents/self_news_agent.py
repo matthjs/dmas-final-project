@@ -27,10 +27,11 @@ class SelfNewsAgent(Agent):
 
         dissonances = []
         for neighbor in neighbors:
-            dissonances.append(
-                # f^i->j(t)
-                -np.linalg.norm(neighbor.opinion - self.bias) + neighbor.tolerance_threshold
-            )
+            if isinstance(neighbor, UserAgent):
+                dissonances.append(
+                    # f^i->j(t)
+                    -np.linalg.norm(neighbor.opinion - self.bias) + neighbor.tolerance_threshold
+                )
         
         feedback = np.mean(dissonances)
         return feedback
@@ -40,7 +41,7 @@ class SelfNewsAgent(Agent):
         Influence nearby user agents in the network based on the fixed bias.
         """
         # Calculate user feedback to adjust the news bias
-        feedback = self.get_user_feedback
+        feedback = self.get_user_feedback()
         self.bias += self.adjustability * feedback * self.bias
         # Ensure the bias remains within [-1, 1] bounds 
         self.bias = np.clip(self.bias, -1, 1)

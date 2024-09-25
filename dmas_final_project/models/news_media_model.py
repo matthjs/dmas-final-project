@@ -77,29 +77,31 @@ class NewsMediaModel(Model):
         """
         for i in range(self.num_users):
             rationality = random.uniform(0.1, 1)
-            affective_involvement = random.uniform(0.0, 1)
-            #BB: why does rationality start at 0.1 and AffInv at 0.0?
-            user = UserAgent(i, self, self.opinion_dims, rationality, affective_involvement)
+            affective_involvement = random.uniform(0.2, 1)
+            tolerance_threshold = random.uniform(0.1, 1)
+            user = UserAgent(i, self, self.opinion_dims, rationality, affective_involvement,
+                             tolerance_threshold)
             self.schedule.add(user)
             self.G.nodes[i]['agent'] = user
 
         for i in range(self.num_official_media):
-            bias = [0] * self.opinion_dims
-            official_media = OfficialNewsAgent(i + self.num_users, self, bias)
+            official_media = OfficialNewsAgent(i + self.num_users, self, self.opinion_dims)
             self.schedule.add(official_media)
             self.G.nodes[i + self.num_users]['agent'] = official_media
 
         for i in range(self.num_self_media):
             bias = np.random.uniform(-1, 1, self.opinion_dims)
-            self_media = SelfNewsAgent(i + self.num_users + self.num_official_media, self, bias)
+            adjustability = 0.1
+            self_media = SelfNewsAgent(i + self.num_users + self.num_official_media, self, bias,
+                                       adjustability)
             self.schedule.add(self_media)
             self.G.nodes[i + self.num_users + self.num_official_media]['agent'] = self_media
 
     def compute_alignments(self):
-        self.principal_components, self.global_alignment = self.compute_global_alignment
+        self.principal_components, self.global_alignment = self.compute_global_alignment()
         self.global_alignments.append(self.global_alignment)
 
-        user_agents = [agent.opinion for agent in self.schedule.agents if isinstance(agent, UserAgent)]
+        user_agents = [agent for agent in self.schedule.agents if isinstance(agent, UserAgent)]
         for user_agent in user_agents:
             user_agent.compute_alignment(self.principal_components[0])     # Individual alignment is computed
             # based on first principle component.
@@ -110,7 +112,7 @@ class NewsMediaModel(Model):
             [agent.opinion for agent in self.schedule.agents if isinstance(agent, UserAgent)])
         
         # Perform PCA
-        pca = PCA(n_components=2)
+        pca = PCA(n_components=self.opinion_dims)
         principal_components = pca.fit_transform(opinion_space)
 
         # First Principal Component (c1)

@@ -19,4 +19,5 @@ def plot_global_alignment_over_time(model: NewsMediaModel) -> None:
     plt.ylabel('Global Alignment (A(t))')
     plt.title('Global Alignment Over Time')
     plt.grid(True)
+    plt.savefig("alignments.png")
     plt.show()
