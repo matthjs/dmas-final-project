@@ -6,6 +6,7 @@ from dmas_final_project.agents.official_news_agent import OfficialNewsAgent
 from dmas_final_project.agents.self_news_agent import SelfNewsAgent
 from dmas_final_project.agents.user_agent import UserAgent
 from dmas_final_project.models.news_media_model import NewsMediaModel
+from dmas_final_project.util import plot_global_alignment_over_time
 
 
 def plot_opinion_dynamics(results):
@@ -30,6 +31,7 @@ def plot_opinion_dynamics(results):
     plt.xlabel('Step')
     plt.ylabel('Average Opinion')
     plt.legend()
+    plt.savefig("opinion_dynamics.png")
     plt.show()
 
 
@@ -69,6 +71,7 @@ def visualize_social_network(model):
     plt.legend(handles=legend_elements, loc='upper right')
 
     plt.title('Social Network Visualization')
+    plt.savefig("graph.png")
     plt.show()
 
 
@@ -77,7 +80,7 @@ def main() -> None:
     num_users = 50  # Number of user agents
     num_official_media = 1  # Number of official news agents
     num_self_media = 5  # Number of self-news agents
-    opinion_dims = 5  # Number of opinion dimensions (multi-dimensional opinion space)
+    opinion_dims = 3  # Number of opinion dimensions (multi-dimensional opinion space)
 
     # Define network parameters (scale-free network)
     network_type = 'scale_free'  # Choose between 'scale_free' or 'small_world'
@@ -91,7 +94,8 @@ def main() -> None:
         num_self_media=num_self_media,
         opinion_dims=opinion_dims,
         network_type=network_type,
-        network_params=network_params
+        network_params=network_params,
+        align_freq=10
     )
 
     # Run the model for a specified number of steps
@@ -105,6 +109,8 @@ def main() -> None:
 
     plot_opinion_dynamics(results)
     visualize_social_network(model)
+    plot_global_alignment_over_time(model)
+
 
 
 if __name__ == "__main__":
