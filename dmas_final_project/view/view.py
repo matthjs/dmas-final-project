@@ -35,7 +35,32 @@ def network_portrayal(G: nx.Graph) -> Dict[str, Any]:
 
     :return: A dictionary containing lists of node and edge portrayals.
     """
-    portrayal = dict()
-    portrayal['nodes'] = [agent_portrayal(node) for node in G.nodes]
-    portrayal['edges'] = [{'source': source.unique_id, 'target': target.unique_id} for source, target in G.edges]
+    portrayal = {
+        'nodes': [],
+        'edges': []
+    }
+
+    for node_id, data in G.nodes(data=True):
+        agents = data.get('agent', [])
+        if not isinstance(agents, list):
+            agents = [agents]  # Ensure agents is a list even if it contains a single agent
+
+        for agent in agents:
+            node_portrayal = agent_portrayal(agent)
+            node_portrayal.update({
+                "id": node_id,
+                "size": 7,  # Example size; you might want to adjust based on agent properties
+                "color": node_portrayal["Color"],  # Color is already set in agent_portrayal
+                "label": node_portrayal["text"]
+            })
+            portrayal['nodes'].append(node_portrayal)
+
+    for source, target in G.edges:
+        portrayal['edges'].append({
+            'source': source,
+            'target': target,
+            'width': 2,  # Set the width of the edges
+            'color': "gray",  # You can also set different colors for edges if needed
+        })
+
     return portrayal

@@ -144,13 +144,13 @@ def main() -> None:
         for _ in range(params['steps']):
             model.step()
         print("Simulation complete.")
-        plot_global_alignment_over_time(model)
+        plot_global_alignment_over_time(model.datacollector)
 
 
 if __name__ == "__main__":
     """
-    python run_model.py interactive --config_file <config.json> --network_file <network_file>
+    python main.py interactive --config_file <config.json> --network_file <network_file>
     
-    python run_model.py simulation --config_file config.json --steps 200
+    python main.py simulation --config_file config.json --steps 200
     """
     main()

@@ -1,21 +1,24 @@
 import matplotlib.pyplot as plt
-from dmas_final_project.models.news_media_model import NewsMediaModel
+from mesa import DataCollector
 
 
-def plot_global_alignment_over_time(model: NewsMediaModel) -> None:
+def plot_global_alignment_over_time(datacollector: DataCollector) -> None:
     """
-    Plot the global alignment over time.
-    
-    :param model: The NewsMediaModel instance from which to plot the global alignment.
+    Plot the global alignment over time using data collected by the DataCollector.
+
+    :param datacollector: The DataCollector instance containing the global alignment data.
     """
-    # Make sure to run the model for enough steps to collect data
-    if not model.global_alignments:
+    # Retrieve the global alignment data from the DataCollector
+    global_alignment_data = datacollector.get_model_vars_dataframe()
+
+    if global_alignment_data.empty:
         print("No alignment data available. Ensure the model has been stepped through multiple iterations.")
         return
 
     # Plotting the global alignment over time
     plt.figure(figsize=(10, 6))
-    plt.plot(range(len(model.global_alignments)), model.global_alignments, marker='o', linestyle='-', color='b')
+    plt.plot(global_alignment_data.index, global_alignment_data['Global Alignment'], marker='o', linestyle='-',
+             color='b')
     plt.xlabel('Time Step')
     plt.ylabel('Global Alignment (A(t))')
     plt.title('Global Alignment Over Time')

@@ -50,7 +50,9 @@ class NewsMediaModel(Model):
         # Create agents and place them in the network
         self.create_agents()
 
+        # DataCollector to track global alignment
         self.datacollector = DataCollector(
+            model_reporters={"Global Alignment": lambda m: m.global_alignment},
             agent_reporters={"Opinion": lambda a: a.opinion if isinstance(a, UserAgent) else None}
         )
 
@@ -104,14 +106,14 @@ class NewsMediaModel(Model):
 
         user_agents = [agent for agent in self.schedule.agents if isinstance(agent, UserAgent)]
         for user_agent in user_agents:
-            user_agent.compute_alignment(self.principal_components[0])     # Individual alignment is computed
+            user_agent.compute_alignment(self.principal_components[0])  # Individual alignment is computed
             # based on first principle component.
 
     def compute_global_alignment(self):
-        # Double check this.
+        # NOTE: The opinion space now contains nan vectors this needs to be fixed.
         opinion_space = np.array(
-            [agent.opinion for agent in self.schedule.agents if isinstance(agent, UserAgent)])
-        
+            [agent.opinion for agent in self.schedule.agents if isinstance(agent, UserAgent) and not np.isnan(agent.opinion).any()])
+
         # Perform PCA
         pca = PCA(n_components=self.opinion_dims)
         principal_components = pca.fit_transform(opinion_space)
@@ -129,7 +131,6 @@ class NewsMediaModel(Model):
         # print("Variance Explained by c1 (A(t) = λ1):", A_t)
 
         return principal_components, A_t
-        
 
     def get_neighbors(self, agent: Agent) -> List[Agent]:
         """
@@ -154,7 +155,7 @@ class NewsMediaModel(Model):
         user_agents = [a for a in self.schedule.agents if isinstance(a, UserAgent)]
 
         for user in user_agents:
-            neighbors = [neighbor for neighbor in self.get_neighbors(user) if isinstance(neighbor, UserAgent)]
+            neighbors = [neighbor for neighbor in self.grid.get_neighbors(user.pos, include_center=False) if isinstance(neighbor, UserAgent)]
 
             if len(neighbors) >= 2:  # Minimum 3 nodes to form a triangle
                 for i in range(len(neighbors)):
@@ -178,7 +179,7 @@ class NewsMediaModel(Model):
             for agent in motif:
                 agent.is_guided = True  # Mark agents in motifs as under guidance
 
-    #BB: do we still even want to implement guidance?
+    # BB: do we still even want to implement guidance?
 
     def step(self) -> None:
         """
@@ -194,4 +195,3 @@ class NewsMediaModel(Model):
             self.compute_alignments()
 
         self.datacollector.collect(self)
-
