@@ -1,12 +1,12 @@
 from mesa import Agent
 from typing import List, Tuple, Any
 from mesa import Model
+from mesa.space import NetworkGrid
 from mesa.time import RandomActivation
 from mesa.datacollection import DataCollector
 import networkx as nx
 import numpy as np
 import random
-
 from sklearn.decomposition import PCA
 from dmas_final_project.agents.user_agent import UserAgent
 from dmas_final_project.agents.official_news_agent import OfficialNewsAgent
@@ -38,17 +38,14 @@ class NewsMediaModel(Model):
         self.opinion_dims = opinion_dims
         self.network_type = network_type
         self.network_params = network_params
+        self.align_freq = align_freq
         self.schedule = RandomActivation(self)
         self.running = True
 
-        self.align_freq = align_freq
-
-        self.global_alignment = None
-        self.global_alignments = []
-        self.principal_components = None
-
         # Create social network
         self.G = self.create_network()
+
+        self.grid = NetworkGrid(self.G)
 
         # Create agents and place them in the network
         self.create_agents()
@@ -56,6 +53,10 @@ class NewsMediaModel(Model):
         self.datacollector = DataCollector(
             agent_reporters={"Opinion": lambda a: a.opinion if isinstance(a, UserAgent) else None}
         )
+
+        self.global_alignment = None
+        self.global_alignments = []
+        self.principal_components = None
 
     def create_network(self) -> nx.Graph:
         """
@@ -71,31 +72,31 @@ class NewsMediaModel(Model):
             raise ValueError("Unsupported network type specified.")
         return G
 
-    def create_agents(self) -> None:
-        """
-        Create agents and add them to the network graph.
-        """
+    def create_agents(self):
+        agent_id = 0
         for i in range(self.num_users):
-            rationality = random.uniform(0.1, 1)
-            affective_involvement = random.uniform(0.2, 1)
-            tolerance_threshold = random.uniform(0.1, 1)
-            user = UserAgent(i, self, self.opinion_dims, rationality, affective_involvement,
+            rationality = self.random.uniform(0.1, 1)
+            affective_involvement = self.random.uniform(0.2, 1)
+            tolerance_threshold = self.random.uniform(0.1, 1)
+            user = UserAgent(agent_id, self, self.opinion_dims, rationality, affective_involvement,
                              tolerance_threshold)
             self.schedule.add(user)
-            self.G.nodes[i]['agent'] = user
+            self.grid.place_agent(user, agent_id)
+            agent_id += 1
 
         for i in range(self.num_official_media):
-            official_media = OfficialNewsAgent(i + self.num_users, self, self.opinion_dims)
+            official_media = OfficialNewsAgent(agent_id, self, self.opinion_dims)
             self.schedule.add(official_media)
-            self.G.nodes[i + self.num_users]['agent'] = official_media
+            self.grid.place_agent(official_media, agent_id)
+            agent_id += 1
 
         for i in range(self.num_self_media):
             bias = np.random.uniform(-1, 1, self.opinion_dims)
             adjustability = 0.1
-            self_media = SelfNewsAgent(i + self.num_users + self.num_official_media, self, bias,
-                                       adjustability)
+            self_media = SelfNewsAgent(agent_id, self, bias, adjustability)
             self.schedule.add(self_media)
-            self.G.nodes[i + self.num_users + self.num_official_media]['agent'] = self_media
+            self.grid.place_agent(self_media, agent_id)
+            agent_id += 1
 
     def compute_alignments(self):
         self.principal_components, self.global_alignment = self.compute_global_alignment()
@@ -183,6 +184,8 @@ class NewsMediaModel(Model):
         """
         Advance the model by one step, apply guidance if necessary, and collect data.
         """
+        self.schedule.step()
+
         # Apply motif-based guidance every 30 steps
         if self.schedule.steps % 30 == 0:
             self.apply_guidance()
@@ -191,4 +194,4 @@ class NewsMediaModel(Model):
             self.compute_alignments()
 
         self.datacollector.collect(self)
-        self.schedule.step()
+

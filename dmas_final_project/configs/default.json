@@ -1,0 +1,12 @@
+{
+    "num_users": 100,
+    "num_official_media": 1,
+    "num_self_media": 5,
+    "opinion_dims": 3,
+    "network_type": "scale_free",
+    "network_params": {
+        "n": 100,
+        "m": 2
+    },
+    "align_freq": 10
+}

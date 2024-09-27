@@ -29,14 +29,6 @@ class UserAgent(Agent):
 
     def compute_alignment(self, principal_component: np.ndarray) -> None:
         # Calculate the angle phi^i(t) between the opinion vector and the first principal component
-        dot_product = np.dot(self.opinion, principal_component)
-        norm_opinion = np.linalg.norm(self.opinion)
-        norm_principal = np.linalg.norm(principal_component)
-        cos_phi = dot_product / (norm_opinion * norm_principal)
-
-        # Ensure the value is within the valid range for arccos due to floating-point precision issues
-        cos_phi = np.clip(cos_phi, -1.0, 1.0)
-
         cos_phi = self.compute_similarity(principal_component)
 
         # Compute the angle phi^i(t)
@@ -55,19 +47,18 @@ class UserAgent(Agent):
         dot_product = np.dot(self.opinion, other_opinion)
         norm_product = np.linalg.norm(self.opinion) * np.linalg.norm(other_opinion)
         similarity = dot_product / norm_product if norm_product != 0 else 0
-        return max(0, similarity) 
-
+        return max(0, similarity)
 
     def step(self) -> None:
         """
         Update agent's opinion based on interactions with neighboring agents.
         """
-        neighbors = self.model.get_neighbors(self)
+        neighbors = self.model.grid.get_neighbors(self.pos, include_center=False)
         for neighbor in neighbors:
             if hasattr(neighbor, 'bias'):  # Check if the neighbor has a 'bias' attribute
                 # Update opinion based on news bias and rationality
                 self.opinion += self.rationality * (neighbor.bias - self.opinion)
-                #BB: will we add a similarity treshold for media? if so, maybe if statements are unnecessary, same method for everything
+                # BB: will we add a similarity treshold for media? if so, maybe if statements are unnecessary, same method for everything
             elif isinstance(neighbor, UserAgent):
                 similarity = self.compute_similarity(neighbor.opinion)
                 if similarity > self.affective_involvement:  # Similar enough to interact
