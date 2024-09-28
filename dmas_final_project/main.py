@@ -10,7 +10,7 @@ from dmas_final_project.agents.user_agent import UserAgent
 from dmas_final_project.models.news_media_model import NewsMediaModel
 from dmas_final_project.parser.parser import parse_arguments, parse_news_media_model
 from dmas_final_project.plotting.plotting import plot_global_alignment_over_time
-from dmas_final_project.view.view import network_portrayal
+from dmas_final_project.view.view import network_portrayal, get_server
 
 
 def plot_opinion_dynamics(results):
@@ -123,20 +123,7 @@ def main() -> None:
     params = parse_arguments()
 
     if params['mode'] == 'interactive':
-        network = NetworkModule(network_portrayal, 500, 500)
-        chart = ChartModule([{"Label": "Global Alignment", "Color": "Blue"}])
-
-        server = ModularServer(NewsMediaModel,
-                               [network, chart],
-                               "News Media Model",
-                               {"num_users": 50,
-                                "num_official_media": 1,
-                                "num_self_media": 5,
-                                "opinion_dims": 3,
-                                "network_type": 'scale_free',
-                                "network_params": {"n": 56, "m": 2},
-                                "align_freq": 10})
-        server.port = 8521
+        server = get_server(params)
         server.launch()
     elif params['mode'] == 'simulation':
         print("Running simulation...")

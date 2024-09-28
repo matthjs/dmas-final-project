@@ -23,7 +23,7 @@ class SelfNewsAgent(Agent):
         self.adjustability = adjustability  # Degree of bias adjustment based on feedback
 
     def get_user_feedback(self):
-        neighbors = self.model.get_neighbors(self)
+        neighbors = self.model.grid.get_neighbors(self.pos, include_center=False)
 
         dissonances = []
         for neighbor in neighbors:
