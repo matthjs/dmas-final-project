@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.10"
 mesa = "^2.3.3"
 scikit-learn = "^1.5.2"
+loguru = "^0.7.2"
 
 
 [build-system]

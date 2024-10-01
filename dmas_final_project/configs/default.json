@@ -1,0 +1,23 @@
+{
+    "num_users": 94,
+    "num_official_media": 1,
+    "num_self_media": 5,
+    "opinion_dims": 3,
+    "network_type": "scale_free",
+    "network_params": {
+        "m": 2
+    },
+    "align_freq": 10,
+    "opinion_mean": 0.0,
+    "opinion_std": 0.5,
+    "user_rationality_mean": 0.5,
+    "user_rationality_std": 0.1,
+    "user_affective_involvement_mean": 0.1,
+    "user_affective_involvement_std": 0.05,
+    "user_tolerance_threshold_mean": 0.5,
+    "user_tolerance_threshold_std": 0.1,
+    "self_media_bias_mean": 0.0,
+    "self_media_bias_std": 0.5,
+    "self_media_adjustability_mean": 0.1,
+    "self_media_adjustability_std": 0.05
+}

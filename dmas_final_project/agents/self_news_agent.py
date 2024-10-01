@@ -23,7 +23,7 @@ class SelfNewsAgent(Agent):
         self.adjustability = adjustability  # Degree of bias adjustment based on feedback
 
     def get_user_feedback(self):
-        neighbors = self.model.get_neighbors(self)
+        neighbors = self.model.grid.get_neighbors(self.pos, include_center=False)
 
         dissonances = []
         for neighbor in neighbors:
@@ -46,7 +46,7 @@ class SelfNewsAgent(Agent):
         # Ensure the bias remains within [-1, 1] bounds 
         self.bias = np.clip(self.bias, -1, 1)
 
-        neighbors = self.model.get_neighbors(self)
+        neighbors = self.model.grid.get_neighbors(self.pos, include_center=False)
         for neighbor in neighbors:
             if isinstance(neighbor, UserAgent):
                 neighbor.opinion += neighbor.rationality * (self.bias - neighbor.opinion)

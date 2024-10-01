@@ -23,7 +23,7 @@ class OfficialNewsAgent(Agent):
         """
         Adjust news bias based on aggregated user feedback.
         """
-        neighbors = self.model.get_neighbors(self)
+        neighbors = self.model.grid.get_neighbors(self.pos, include_center=False)
         for neighbor in neighbors:
             if isinstance(neighbor, UserAgent):
                 neighbor.opinion += neighbor.rationality * (self.news - neighbor.opinion)

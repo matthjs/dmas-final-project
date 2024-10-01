@@ -1,12 +1,16 @@
 import networkx as nx
 import numpy as np
 from matplotlib import pyplot as plt
+from mesa_viz_tornado.ModularVisualization import ModularServer
+from mesa_viz_tornado.modules import NetworkModule, ChartModule
 
 from dmas_final_project.agents.official_news_agent import OfficialNewsAgent
 from dmas_final_project.agents.self_news_agent import SelfNewsAgent
 from dmas_final_project.agents.user_agent import UserAgent
 from dmas_final_project.models.news_media_model import NewsMediaModel
-from dmas_final_project.util import plot_global_alignment_over_time
+from dmas_final_project.parser.parser import parse_arguments, parse_news_media_model
+from dmas_final_project.plotting.plotting import plot_global_alignment_over_time
+from dmas_final_project.view.view import network_portrayal, get_server
 
 
 def plot_opinion_dynamics(results):
@@ -75,7 +79,7 @@ def visualize_social_network(model):
     plt.show()
 
 
-def main() -> None:
+def run() -> None:
     # Hardcoded model parameters for now.
     num_users = 50  # Number of user agents
     num_official_media = 1  # Number of official news agents
@@ -99,19 +103,41 @@ def main() -> None:
     )
 
     # Run the model for a specified number of steps
-    num_steps = 1000
-    for i in range(num_steps):
-        model.step()
+    # num_steps = 1000
+    # for i in range(num_steps):
+    #     model.step()
 
     # Collect the results
-    results = model.datacollector.get_agent_vars_dataframe()
-    print(results)
+    # results = model.datacollector.get_agent_vars_dataframe()
+    # print(results)
 
-    plot_opinion_dynamics(results)
-    visualize_social_network(model)
-    plot_global_alignment_over_time(model)
+    # plot_opinion_dynamics(results)
+    # visualize_social_network(model)
+    # plot_global_alignment_over_time(model)
 
+
+def main() -> None:
+    """
+    Main function to parse arguments and run the agent-based model.
+    """
+    params = parse_arguments()
+
+    if params['mode'] == 'interactive':
+        server = get_server(params)
+        server.launch()
+    elif params['mode'] == 'simulation':
+        print("Running simulation...")
+        model = parse_news_media_model(params)
+        for _ in range(params['steps']):
+            model.step()
+        print("Simulation complete.")
+        plot_global_alignment_over_time(model.datacollector)
 
 
 if __name__ == "__main__":
+    """
+    python main.py interactive --config_file <config.json> --network_file <network_file>
+    
+    python main.py simulation --config_file config.json --steps 200
+    """
     main()
