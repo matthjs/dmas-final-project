@@ -94,6 +94,27 @@ class NewsMediaModel(Model):
             G = nx.watts_strogatz_graph(n, self.network_params['k'], self.network_params['p'])
         else:
             raise ValueError("Unsupported network type specified.")
+
+        # Add extra edges between media agents and user agents
+        user_nodes = range(self.num_users)  # IDs for user agents
+        official_media_nodes = range(self.num_users,
+                                     self.num_users + self.num_official_media)  # IDs for official media agents
+        self_media_nodes = range(self.num_users + self.num_official_media, n)  # IDs for self media agents
+
+        # Add more connections between official media and user agents
+        for media_id in official_media_nodes:
+            num_extra_edges = np.random.randint(3, 4)
+            connected_users = np.random.choice(user_nodes, num_extra_edges, replace=False)
+            for user_id in connected_users:
+                G.add_edge(media_id, user_id)
+
+        # Add more connections between self-media and user agents
+        for media_id in self_media_nodes:
+            num_extra_edges = np.random.randint(3, 4)
+            connected_users = np.random.choice(user_nodes, num_extra_edges, replace=False)
+            for user_id in connected_users:
+                G.add_edge(media_id, user_id)
+
         return G
 
     def create_agents(self):
