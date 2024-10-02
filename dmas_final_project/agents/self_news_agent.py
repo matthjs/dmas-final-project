@@ -28,14 +28,15 @@ class SelfNewsAgent(Agent):
         neighbors = self.model.grid.get_neighbors(self.pos, include_center=False)
 
         dissonances = []
+        opinion_dim = len(self.bias)  # Assuming self.bias is an M-dimensional vector
         for neighbor in neighbors:
             if isinstance(neighbor, UserAgent):
-                dissonances.append(
-                    # f^i->j(t)
-                    -np.linalg.norm(neighbor.opinion - self.bias) + neighbor.tolerance_threshold
-                )
-        
-        feedback = np.mean(dissonances)
+                # Scale dissonance by sqrt(M) to avoid large feedback values in high dimensions
+                dissonance = (-np.linalg.norm(neighbor.opinion - self.bias) /
+                              np.sqrt(opinion_dim) + neighbor.tolerance_threshold)
+                dissonances.append(dissonance)
+
+        feedback = np.mean(dissonances) if dissonances else 0  # Handle case with no neighbors
         return feedback
 
     def step(self) -> None:
