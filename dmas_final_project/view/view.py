@@ -54,17 +54,6 @@ def network_portrayal(G: nx.Graph) -> Dict[str, Any]:
             agents = [agents]  # Ensure agents is a list even if it contains a single agent
 
         for agent in agents:
-            # Convert NumPy arrays (like opinion) to lists so they can be JSON serializable
-
-            if isinstance(agent, UserAgent):
-                opinion = agent.opinion.tolist() if isinstance(agent.opinion, np.ndarray) else agent.opinion
-            else:
-                opinion = None
-
-            bias = agent.bias.tolist() if isinstance(agent, SelfNewsAgent) and isinstance(agent.bias,
-                                                                                          np.ndarray) else getattr(
-                agent, "bias", None)
-
             node_portrayal = agent_portrayal(agent)
             node_portrayal.update({
                 "id": node_id,
