@@ -21,6 +21,7 @@ class NewsMediaModel(Model):
     def __init__(self, num_users: int, num_official_media: int, num_self_media: int, opinion_dims: int,
                  network_type: str, network_params: dict, align_freq: int,
                  extra_media_edges: int, extra_self_media_edges: int,
+                 enable_feedback: bool = True,
                  user_rationality_mean=0.5, user_rationality_std=0.1,
                  user_affective_involvement_mean=0.5, user_affective_involvement_std=0.1,
                  user_tolerance_threshold_mean=0.5, user_tolerance_threshold_std=0.1,
@@ -49,6 +50,8 @@ class NewsMediaModel(Model):
         self.align_freq = align_freq
         self.schedule = RandomActivation(self)
         self.running = True
+
+        self.enable_feedback = enable_feedback
 
         # Additional graph settings.
         self.extra_media_edges = extra_media_edges
@@ -167,7 +170,8 @@ class NewsMediaModel(Model):
             # Ensure adjustability is within a sensible range
             adjustability = np.clip(adjustability, 0, 1)
 
-            self_media = SelfNewsAgent(agent_id, self, bias, adjustability)
+            self_media = SelfNewsAgent(agent_id, self, bias, adjustability,
+                                       enable_feedback=self.enable_feedback)
             self.schedule.add(self_media)
             self.grid.place_agent(self_media, agent_id)
             agent_id += 1

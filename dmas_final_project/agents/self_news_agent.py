@@ -9,7 +9,8 @@ class SelfNewsAgent(Agent):
     Represents self-published news that adjusts content bias based on user feedback.
     """
 
-    def __init__(self, unique_id: int, model: Model, bias: np.ndarray, adjustability: float = 0.1) -> None:
+    def __init__(self, unique_id: int, model: Model, bias: np.ndarray, adjustability: float = 0.1,
+                 enable_feedback: bool = True) -> None:
         """
         Initialize a SelfNewsAgent.
 
@@ -21,6 +22,7 @@ class SelfNewsAgent(Agent):
         super().__init__(unique_id, model)
         self.bias = bias  # Fixed multi-dimensional bias vector
         self.adjustability = adjustability  # Degree of bias adjustment based on feedback
+        self.enable_feedback = enable_feedback
 
     def get_user_feedback(self):
         neighbors = self.model.grid.get_neighbors(self.pos, include_center=False)
@@ -40,11 +42,12 @@ class SelfNewsAgent(Agent):
         """
         Influence nearby user agents in the network based on the fixed bias.
         """
-        # Calculate user feedback to adjust the news bias
-        feedback = self.get_user_feedback()
-        self.bias += self.adjustability * feedback * self.bias
-        # Ensure the bias remains within [-1, 1] bounds 
-        self.bias = np.clip(self.bias, -1, 1)
+        if self.enable_feedback:
+            # Calculate user feedback to adjust the news bias
+            feedback = self.get_user_feedback()
+            self.bias += self.adjustability * feedback * self.bias
+            # Ensure the bias remains within [-1, 1] bounds
+            self.bias = np.clip(self.bias, -1, 1)
 
         neighbors = self.model.grid.get_neighbors(self.pos, include_center=False)
         for neighbor in neighbors:

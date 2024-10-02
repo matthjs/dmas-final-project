@@ -1,6 +1,6 @@
 from mesa_viz_tornado.ModularVisualization import ModularServer
-from mesa_viz_tornado.UserParam import Slider
-from mesa_viz_tornado.modules import NetworkModule, ChartModule
+from mesa_viz_tornado.UserParam import Slider, Checkbox
+from mesa_viz_tornado.modules import ChartModule, NetworkModule
 
 from dmas_final_project.agents.official_news_agent import OfficialNewsAgent
 from dmas_final_project.agents.self_news_agent import SelfNewsAgent
@@ -54,6 +54,17 @@ def network_portrayal(G: nx.Graph) -> Dict[str, Any]:
             agents = [agents]  # Ensure agents is a list even if it contains a single agent
 
         for agent in agents:
+            # Convert NumPy arrays (like opinion) to lists so they can be JSON serializable
+
+            if isinstance(agent, UserAgent):
+                opinion = agent.opinion.tolist() if isinstance(agent.opinion, np.ndarray) else agent.opinion
+            else:
+                opinion = None
+
+            bias = agent.bias.tolist() if isinstance(agent, SelfNewsAgent) and isinstance(agent.bias,
+                                                                                          np.ndarray) else getattr(
+                agent, "bias", None)
+
             node_portrayal = agent_portrayal(agent)
             node_portrayal.update({
                 "id": node_id,
@@ -65,12 +76,13 @@ def network_portrayal(G: nx.Graph) -> Dict[str, Any]:
 
             # Adding more properties based on agent type
             if isinstance(agent, UserAgent):
-                indv_allignemnt = "not computed" if np.round(agent.alignment, decimals=3) is None else np.round(agent.alignment, decimals=3)
+                indv_allignemnt = "not computed" if agent.alignment is None else np.round(agent.alignment, decimals=3)
                 node_portrayal["tooltip"] += (f", Opinion: {np.round(agent.opinion, decimals=3)},"
                                               f"Rationality: {np.round(agent.rationality, decimals=3)},") + (f"Indv. "
                                                                                                              f"allignment: {indv_allignemnt}")
             elif isinstance(agent, SelfNewsAgent):
-                node_portrayal["tooltip"] += f", Bias: {np.round(agent.bias, decimals=3)}, Adjustability: {np.round(agent.adjustability, decimals=3)}"
+                node_portrayal[
+                    "tooltip"] += f", Bias: {np.round(agent.bias, decimals=3)}, Adjustability: {np.round(agent.adjustability, decimals=3)}"
             elif isinstance(agent, OfficialNewsAgent):
                 node_portrayal["tooltip"] += f", Official News Agent"
 
@@ -112,6 +124,7 @@ def get_server(params: Dict[str, Any]) -> ModularServer:
         visualization_elements=[network, chart],
         name="News Media Model",
         model_params={
+            "enable_feedback": Checkbox('Enable Feedback', value=params["enable_feedback"]),
             "num_users": Slider("Number of Users", value=params["num_users"], min_value=10, max_value=200, step=1),
             "num_official_media": Slider("Number of Official Media", value=params["num_official_media"], min_value=1,
                                          max_value=10, step=1),
