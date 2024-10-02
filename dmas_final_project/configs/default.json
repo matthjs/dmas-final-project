@@ -1,7 +1,7 @@
 {
-    "num_users": 94,
+    "num_users": 50,
     "num_official_media": 1,
-    "num_self_media": 5,
+    "num_self_media": 3,
     "opinion_dims": 3,
     "network_type": "scale_free",
     "network_params": {
@@ -10,6 +10,8 @@
     "align_freq": 10,
     "opinion_mean": 0.0,
     "opinion_std": 0.5,
+    "extra_media_edges": 5,
+    "extra_self_media_edges": 5,
     "user_rationality_mean": 0.5,
     "user_rationality_std": 0.1,
     "user_affective_involvement_mean": 0.1,
