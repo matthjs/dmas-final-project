@@ -20,6 +20,7 @@ class NewsMediaModel(Model):
 
     def __init__(self, num_users: int, num_official_media: int, num_self_media: int, opinion_dims: int,
                  network_type: str, network_params: dict, align_freq: int,
+                 extra_media_edges: int, extra_self_media_edges: int,
                  user_rationality_mean=0.5, user_rationality_std=0.1,
                  user_affective_involvement_mean=0.5, user_affective_involvement_std=0.1,
                  user_tolerance_threshold_mean=0.5, user_tolerance_threshold_std=0.1,
@@ -49,6 +50,10 @@ class NewsMediaModel(Model):
         self.schedule = RandomActivation(self)
         self.running = True
 
+        # Additional graph settings.
+        self.extra_media_edges = extra_media_edges
+        self.extra_self_media_edges = extra_self_media_edges
+
         # Normal distribution parameters
         self.opinion_mean = opinion_mean
         self.opinion_std = opinion_std
@@ -70,6 +75,17 @@ class NewsMediaModel(Model):
 
         # Create agents and place them in the network
         self.create_agents()
+
+        """
+        # Print the number of connections for self-media and official media agents
+        for agent in self.schedule.agents:
+            if isinstance(agent, SelfNewsAgent):
+                num_connections = len(self.G[agent.unique_id])
+                print(f"Self-media agent {agent.unique_id} has {num_connections} connections.")
+            elif isinstance(agent, OfficialNewsAgent):
+                num_connections = len(self.G[agent.unique_id])
+                print(f"Official media agent {agent.unique_id} has {num_connections} connections.")
+        """
 
         # DataCollector to track global alignment
         self.datacollector = DataCollector(
@@ -103,14 +119,14 @@ class NewsMediaModel(Model):
 
         # Add more connections between official media and user agents
         for media_id in official_media_nodes:
-            num_extra_edges = np.random.randint(3, 4)
+            num_extra_edges = self.extra_media_edges
             connected_users = np.random.choice(user_nodes, num_extra_edges, replace=False)
             for user_id in connected_users:
                 G.add_edge(media_id, user_id)
 
         # Add more connections between self-media and user agents
         for media_id in self_media_nodes:
-            num_extra_edges = np.random.randint(3, 4)
+            num_extra_edges = self.extra_self_media_edges
             connected_users = np.random.choice(user_nodes, num_extra_edges, replace=False)
             for user_id in connected_users:
                 G.add_edge(media_id, user_id)
