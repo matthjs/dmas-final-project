@@ -45,16 +45,13 @@ CustomNetworkModule.prototype.render = function(data) {
         .attr("width", self.network_div.clientWidth)
         .attr("height", self.network_div.clientHeight);
 
-    // Rest of your rendering code using D3.js
-    // ...
-
-    // Example rendering code:
-    var simulation = d3.forceSimulation()
-        .nodes(data.nodes)
+    // Initialize simulation and set forces
+    var simulation = d3.forceSimulation(data.nodes)
         .force("link", d3.forceLink(data.edges).id(function(d) { return d.id; }))
         .force("charge", d3.forceManyBody())
         .force("center", d3.forceCenter(self.network_div.clientWidth / 2, self.network_div.clientHeight / 2));
 
+    // Create links
     var link = self.svg.append("g")
         .attr("class", "links")
         .selectAll("line")
@@ -63,6 +60,7 @@ CustomNetworkModule.prototype.render = function(data) {
         .attr("stroke-width", function(d) { return d.width; })
         .attr("stroke", function(d) { return d.color; });
 
+    // Create nodes
     var node = self.svg.append("g")
         .attr("class", "nodes")
         .selectAll("circle")
@@ -70,36 +68,24 @@ CustomNetworkModule.prototype.render = function(data) {
         .enter().append("circle")
         .attr("r", function(d) { return d.size; })
         .attr("fill", function(d) { return d.color; })
-        .call(d3.drag()
-            .on("start", function(event, d) {
-                if (!event.active) simulation.alphaTarget(0.3).restart();
-                d.fx = d.x;
-                d.fy = d.y;
-            })
-            .on("drag", function(event, d) {
-                d.fx = event.x;
-                d.fy = event.y;
-            })
-            .on("end", function(event, d) {
-                if (!event.active) simulation.alphaTarget(0);
-                d.fx = null;
-                d.fy = null;
-            }))
         .on("click", function(event, d) {
             self.updateAgentInfo(d.agent_data);
         });
 
-    simulation.on("tick", function() {
-        link
-            .attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.target.x; })
-            .attr("y2", function(d) { return d.target.y; });
+    // Run the simulation for a fixed number of ticks and then stop it
+    simulation.tick(300);  // Adjust the number of ticks as needed
+    simulation.stop();     // Stop the simulation
 
-        node
-            .attr("cx", function(d) { return d.x; })
-            .attr("cy", function(d) { return d.y; });
-    });
+    // Apply final positions
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
 };
 
 CustomNetworkModule.prototype.updateAgentInfo = function(agentData) {
