@@ -31,11 +31,22 @@ var CustomNetworkModule = function(canvas_width, canvas_height) {
     // Store data and SVG for later use
     self.data = null;
     self.svg = null;
+    self.selected_agent_id = null;
 };
 
 CustomNetworkModule.prototype.render = function(data) {
     var self = this;
     self.data = data;  // Store the data for use in reset
+
+    // Update selected_agent reference
+    if (self.selected_agent_id) {
+        var updated_agent = data.nodes.find(function(agent) {
+            return agent.id === self.selected_agent_id;
+        });
+        if (updated_agent) {
+            self.selected_agent = updated_agent;
+        }
+    }
 
     // Remove existing SVG if any
     d3.select(self.network_div).select("svg").remove();
@@ -69,9 +80,11 @@ CustomNetworkModule.prototype.render = function(data) {
         .attr("r", function(d) { return d.size; })
         .attr("fill", function(d) { return d.color; })
         .on("click", function(event, d) {
+            self.selected_agent = d;  // Store the entire agent object
+            self.selected_agent_id = d.id;  // Optionally keep the ID
             self.updateAgentInfo(d.agent_data);
         });
-
+    
     // Run the simulation for a fixed number of ticks and then stop it
     simulation.tick(300);  // Adjust the number of ticks as needed
     simulation.stop();     // Stop the simulation
@@ -86,6 +99,15 @@ CustomNetworkModule.prototype.render = function(data) {
     node
         .attr("cx", function(d) { return d.x; })
         .attr("cy", function(d) { return d.y; });
+
+
+    // Continuously log the selected agent's data every second
+    d3.interval(function() {
+        if (self.selected_agent && self.selected_agent.agent_data) {
+            self.updateAgentInfo(self.selected_agent.agent_data);
+        }
+    }, 500);
+    
 };
 
 CustomNetworkModule.prototype.updateAgentInfo = function(agentData) {
