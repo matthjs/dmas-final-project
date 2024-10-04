@@ -29,7 +29,7 @@ def main() -> None:
         for _ in range(params['steps']):
             model.step()
         print("Simulation complete.")
-        # plot_social_network(model)
+        plot_social_network(model)
         plot_global_alignment_over_time(model.datacollector)
         plot_evolution_by_dimension(model.datacollector, data_column='Opinion', label='Opinion')
         plot_evolution_by_dimension(model.datacollector, data_column='Bias', label='Bias')

@@ -64,14 +64,14 @@ def plot_individual_alignment_over_time(datacollector: DataCollector) -> None:
         agent_alignment_data = alignment_data.xs(agent_id, level='AgentID')
 
         # Plot the alignment over time for this agent
-        plt.plot(agent_alignment_data.index.get_level_values('Step'), agent_alignment_data, marker='o', linestyle='',
+        plt.plot(agent_alignment_data.index, agent_alignment_data,
                  label=f'Agent {agent_id}')
 
     plt.xlabel('Time Step')
     plt.ylabel('Alignment')
     plt.title('Individual Alignment Over Time')
     plt.grid(True)
-    plt.legend()
+    # plt.legend()
     plt.savefig("individual_alignments.png")
     plt.show()
 
@@ -126,7 +126,8 @@ def plot_evolution_by_dimension(datacollector: DataCollector, data_column: str, 
         plt.ylabel(f'{label} Value (Dimension {dim + 1})')
         plt.title(f'{label} Evolution Over Time (Dimension {dim + 1})')
         plt.grid(True)
-        plt.legend()
+        if data_column != "opinion":
+            plt.legend()
         plt.tight_layout()
 
         # Save and display the plot
