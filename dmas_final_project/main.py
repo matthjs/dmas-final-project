@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from mesa_viz_tornado.ModularVisualization import ModularServer
 from mesa_viz_tornado.modules import NetworkModule, ChartModule
-
+import random
 from dmas_final_project.agents.official_news_agent import OfficialNewsAgent
 from dmas_final_project.agents.self_news_agent import SelfNewsAgent
 from dmas_final_project.agents.user_agent import UserAgent

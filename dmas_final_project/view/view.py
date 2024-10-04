@@ -11,6 +11,7 @@ from mesa import Agent
 import numpy as np
 
 from dmas_final_project.models.news_media_model import NewsMediaModel
+from mesa.visualization.ModularVisualization import VisualizationElement, D3_JS_FILE
 
 
 def agent_portrayal(agent: Agent) -> Dict[str, Any]:
@@ -43,12 +44,32 @@ def network_portrayal(G: nx.Graph) -> Dict[str, Any]:
 
     :return: A dictionary containing lists of node and edge portrayals.
     """
+
+    def serialize_attribute(attr):
+        if isinstance(attr, np.ndarray):
+            return attr.tolist()
+        elif isinstance(attr, (np.float32, np.float64)):
+            return float(attr)
+        elif isinstance(attr, (np.int32, np.int64)):
+            return int(attr)
+        else:
+            return attr
+
+    def format_decimal(value, decimal_places):
+        if isinstance(value, (int, float)):
+            return f"{value:.{decimal_places}f}"
+        elif isinstance(value, list):
+            return [f"{v:.{decimal_places}f}" for v in value]
+        else:
+            return value
+
     portrayal = {
         'nodes': [],
         'edges': []
     }
 
     for node_id, data in G.nodes(data=True):
+        node_id_str = str(node_id)
         agents = data.get('agent', [])
         if not isinstance(agents, list):
             agents = [agents]  # Ensure agents is a list even if it contains a single agent
@@ -56,24 +77,30 @@ def network_portrayal(G: nx.Graph) -> Dict[str, Any]:
         for agent in agents:
             node_portrayal = agent_portrayal(agent)
             node_portrayal.update({
-                "id": node_id,
+                "id": node_id_str,
                 "size": 7,  # Example size; you might want to adjust based on agent properties
-                "color": node_portrayal["Color"],  # Color is already set in agent_portrayal
-                "label": node_portrayal["text"],
-                "tooltip": f"ID: {node_id}, Type: {type(agent).__name__}",
+                "color": "blue" if isinstance(agent, UserAgent)
+                else "red" if isinstance(agent, SelfNewsAgent)
+                else "green",
+                "label": f"ID: {node_id_str}",
+                # Include agent attributes here
+                "agent_data": {
+                    "id": agent.unique_id,
+                    "type": type(agent).__name__,
+                    # Add other attributes as needed
+                },
             })
 
-            # Adding more properties based on agent type
             if isinstance(agent, UserAgent):
-                indv_allignemnt = "not computed" if agent.alignment is None else np.round(agent.alignment, decimals=3)
-                node_portrayal["tooltip"] += (f", Opinion: {np.round(agent.opinion, decimals=3)},"
-                                              f"Rationality: {np.round(agent.rationality, decimals=3)},") + (f"Indv. "
-                                                                                                             f"allignment: {indv_allignemnt}")
-            elif isinstance(agent, SelfNewsAgent):
-                node_portrayal[
-                    "tooltip"] += f", Bias: {np.round(agent.bias, decimals=3)}, Adjustability: {np.round(agent.adjustability, decimals=3)}"
-            elif isinstance(agent, OfficialNewsAgent):
-                node_portrayal["tooltip"] += f", Official News Agent"
+                node_portrayal["agent_data"].update({
+                    "opinion": format_decimal(serialize_attribute(getattr(agent, 'opinion', None)), 3),
+                    "rationality": format_decimal(serialize_attribute(getattr(agent, 'rationality', None)), 3),
+                })
+            if isinstance(agent, SelfNewsAgent):
+                node_portrayal["agent_data"].update({
+                    "bias": format_decimal(serialize_attribute(getattr(agent, 'bias', None)), 3),
+                    "adjustability": format_decimal(serialize_attribute(getattr(agent, 'adjustability', None)), 3),
+                })
 
             portrayal['nodes'].append(node_portrayal)
 
@@ -96,8 +123,8 @@ def network_portrayal(G: nx.Graph) -> Dict[str, Any]:
             edge_color = "gray"  # Default color for other agents
 
         portrayal['edges'].append({
-            'source': source,
-            'target': target,
+            'source': str(source),
+            'target': str(target),
             'width': 2,  # Set the width of the edges
             'color': edge_color,  # Set the color based on the agent type
         })
@@ -105,8 +132,24 @@ def network_portrayal(G: nx.Graph) -> Dict[str, Any]:
     return portrayal
 
 
+class CustomNetworkModule(VisualizationElement):
+    package_includes = [D3_JS_FILE]
+    local_includes = ["view/js/custom_network_module_d3.js"]
+
+    def __init__(self, portrayal_method, canvas_width=500, canvas_height=500):
+        self.portrayal_method = portrayal_method
+        self.canvas_width = canvas_width
+        self.canvas_height = canvas_height
+
+        new_element = f"new CustomNetworkModule({self.canvas_width}, {self.canvas_height})"
+        self.js_code = "elements.push(" + new_element + ");"
+
+    def render(self, model):
+        return self.portrayal_method(model.G)
+
+
 def get_server(params: Dict[str, Any]) -> ModularServer:
-    network = NetworkModule(network_portrayal, 500, 500)
+    network = CustomNetworkModule(network_portrayal, 500, 500)
     chart = ChartModule([{"Label": "Global Alignment", "Color": "Blue"}])
     server = ModularServer(
         model_cls=NewsMediaModel,
