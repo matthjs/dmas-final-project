@@ -9,7 +9,7 @@ from dmas_final_project.agents.self_news_agent import SelfNewsAgent
 from dmas_final_project.agents.user_agent import UserAgent
 from dmas_final_project.models.news_media_model import NewsMediaModel
 from dmas_final_project.parser.parser import parse_arguments, parse_news_media_model
-from dmas_final_project.plotting.plotting import plot_global_alignment_over_time
+from dmas_final_project.plotting.plotting import plot_global_alignment_over_time, plot_evolution_by_dimension, plot_individual_alignment_over_time
 from dmas_final_project.view.view import network_portrayal, get_server
 
 
@@ -132,6 +132,9 @@ def main() -> None:
             model.step()
         print("Simulation complete.")
         plot_global_alignment_over_time(model.datacollector)
+        plot_evolution_by_dimension(model.datacollector, data_column='Opinion', label='Opinion')
+        plot_evolution_by_dimension(model.datacollector, data_column='Bias', label='Bias')
+        plot_individual_alignment_over_time(model.datacollector)
 
 
 if __name__ == "__main__":

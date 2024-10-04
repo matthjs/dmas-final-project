@@ -97,7 +97,10 @@ class NewsMediaModel(Model):
         # DataCollector to track global alignment
         self.datacollector = DataCollector(
             model_reporters={"Global Alignment": lambda m: m.global_alignment if self.schedule.steps % self.align_freq == 0 else None},
-            agent_reporters={"Opinion": lambda a: a.opinion if isinstance(a, UserAgent) else None}
+            agent_reporters={"Opinion": lambda a: a.opinion if isinstance(a, UserAgent) else None,
+                             "Bias": lambda a: a.bias if isinstance(a, SelfNewsAgent) else None,
+                             "Alignment":
+                                 lambda a: a.alignment if isinstance(a, UserAgent) and self.schedule.steps % self.align_freq == 0 else None}
         )
 
         self.global_alignment = None
