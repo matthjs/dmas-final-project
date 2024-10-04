@@ -1,5 +1,10 @@
 import matplotlib.pyplot as plt
+import networkx as nx
 from mesa import DataCollector
+
+from dmas_final_project.agents.official_news_agent import OfficialNewsAgent
+from dmas_final_project.agents.self_news_agent import SelfNewsAgent
+from dmas_final_project.agents.user_agent import UserAgent
 
 
 def plot_global_alignment_over_time(datacollector: DataCollector) -> None:
@@ -127,3 +132,78 @@ def plot_evolution_by_dimension(datacollector: DataCollector, data_column: str, 
         # Save and display the plot
         plt.savefig(f'{label.lower()}_evolution_dim_{dim + 1}.png')
         plt.show()
+
+
+def plot_polarization(datacollector: DataCollector, file_name: str = "polarization.png", title: str = "Polarization Over Time"):
+    """
+    Plot the polarization over time, as measured by the variance of opinions.
+    """
+    # Get the recorded polarization data from the DataCollector
+    polarization_data = datacollector.get_model_vars_dataframe()["Polarization"]
+
+    # Plotting the polarization over time
+    plt.figure(figsize=(10, 6))
+    plt.plot(polarization_data, label="Polarization", color="blue")
+    plt.title(title)
+    plt.xlabel("Time Steps")
+    plt.ylabel("Polarization (Opinion Variance)")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+
+    # Save the plot to a file
+    plt.savefig(file_name)
+    plt.show()
+
+
+def plot_social_network(model):
+    """
+    Visualize the social network graph where nodes represent agents
+    and edges represent connections between them.
+
+    :param model: The NewsMediaModel instance containing the network.
+    """
+    plt.figure(figsize=(12, 12))
+
+    # Get the network graph from the model
+    G = model.grid.G
+
+    # Assign colors to different types of agents
+    color_map = []
+    for node in G:
+        agent = G.nodes[node]['agent']
+        if isinstance(agent, UserAgent):
+            color_map.append('blue')
+        elif isinstance(agent, OfficialNewsAgent):
+            color_map.append('green')
+        elif isinstance(agent, SelfNewsAgent):
+            color_map.append('red')
+
+    # Use spring layout for better visualization with a fixed seed for consistency
+    pos = nx.spring_layout(G, seed=42)
+
+    # Draw the network
+    nx.draw(
+        G,
+        pos,
+        node_color=color_map,
+        with_labels=False,
+        node_size=300,  # Increase node size for better visibility
+        alpha=1.0,  # Ensure nodes are fully opaque
+        edge_color='gray',
+        linewidths=0.5  # Make edges thinner for better clarity
+    )
+
+    # Add a legend to indicate the different types of agents
+    from matplotlib.lines import Line2D
+    legend_elements = [
+        Line2D([0], [0], marker='o', color='w', label='User Agent', markerfacecolor='blue', markersize=10),
+        Line2D([0], [0], marker='o', color='w', label='Official News Agent', markerfacecolor='green', markersize=10),
+        Line2D([0], [0], marker='o', color='w', label='Self News Agent', markerfacecolor='red', markersize=10)
+    ]
+    plt.legend(handles=legend_elements, loc='upper right')
+
+    # Set title and display the graph
+    plt.title('Social Network Visualization')
+    plt.savefig("graph.png")  # Save the figure
+    plt.show()

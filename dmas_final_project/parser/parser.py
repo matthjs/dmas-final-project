@@ -59,22 +59,49 @@ def parse_news_media_model(params: Dict[str, Any]) -> NewsMediaModel:
                    - network_type: str
                    - network_params: dict
                    - align_freq: int
-                   - network: Optional[nx.Graph] (if a predefined network is provided)
+                   - extra_media_edges: int
+                   - extra_self_media_edges: int
+                   - enable_feedback: bool
                    - steps: int (only required for simulation mode)
                    - mode: str ("interactive" or "simulation")
 
     :return: An instance of the NewsMediaModel initialized with the provided parameters.
     """
+
+    # Fetch the mandatory parameters from the params dictionary
     num_users = params.get('num_users')
     num_official_media = params.get('num_official_media')
     num_self_media = params.get('num_self_media')
     opinion_dims = params.get('opinion_dims')
     network_type = params.get('network_type')
     network_params = params.get('network_params')
-    align_freq = params.get('align_freq', 10)
-    network = params.get('network')  # Predefined network if provided
+    align_freq = params.get('align_freq', 10)  # Default value of 10 if not provided
+    extra_media_edges = params.get('extra_media_edges', 0)  # Default to 0
+    extra_self_media_edges = params.get('extra_self_media_edges', 0)  # Default to 0
+    enable_feedback = params.get('enable_feedback', True)
 
-    # Instantiate the model
+    # Opinion distribution parameters
+    opinion_mean = params.get('opinion_mean', 0)
+    opinion_std = params.get('opinion_std', 1)
+
+    # User behavior parameters
+    user_rationality_mean = params.get('user_rationality_mean', 0.5)
+    user_rationality_std = params.get('user_rationality_std', 0.1)
+    user_affective_involvement_mean = params.get('user_affective_involvement_mean', 0.5)
+    user_affective_involvement_std = params.get('user_affective_involvement_std', 0.1)
+    user_tolerance_threshold_mean = params.get('user_tolerance_threshold_mean', 0.5)
+    user_tolerance_threshold_std = params.get('user_tolerance_threshold_std', 0.1)
+
+    # Self-media parameters
+    self_media_bias_mean = params.get('self_media_bias_mean', 0)
+    self_media_bias_std = params.get('self_media_bias_std', 0.5)
+    self_media_adjustability_mean = params.get('self_media_adjustability_mean', 0.1)
+    self_media_adjustability_std = params.get('self_media_adjustability_std', 0.05)
+
+    # Optional predefined network (if provided)
+    network = params.get('network')
+
+    # Instantiate the NewsMediaModel
     model = NewsMediaModel(
         num_users=num_users,
         num_official_media=num_official_media,
@@ -82,13 +109,28 @@ def parse_news_media_model(params: Dict[str, Any]) -> NewsMediaModel:
         opinion_dims=opinion_dims,
         network_type=network_type,
         network_params=network_params,
-        align_freq=align_freq
+        align_freq=align_freq,
+        extra_media_edges=extra_media_edges,
+        extra_self_media_edges=extra_self_media_edges,
+        enable_feedback=enable_feedback,
+        opinion_mean=opinion_mean,
+        opinion_std=opinion_std,
+        user_rationality_mean=user_rationality_mean,
+        user_rationality_std=user_rationality_std,
+        user_affective_involvement_mean=user_affective_involvement_mean,
+        user_affective_involvement_std=user_affective_involvement_std,
+        user_tolerance_threshold_mean=user_tolerance_threshold_mean,
+        user_tolerance_threshold_std=user_tolerance_threshold_std,
+        self_media_bias_mean=self_media_bias_mean,
+        self_media_bias_std=self_media_bias_std,
+        self_media_adjustability_mean=self_media_adjustability_mean,
+        self_media_adjustability_std=self_media_adjustability_std
     )
 
-    # If a predefined network is provided, override the generated network
+    # If a predefined network is provided, override the model's generated network
     if network is not None:
-        pass
-        # TODO:
+        model.G = network
+        model.grid = NetworkGrid(model.G)
 
     return model
 

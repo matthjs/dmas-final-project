@@ -1,0 +1,26 @@
+{
+    "num_users": 100,
+    "num_official_media": 2,
+    "num_self_media": 5,
+    "opinion_dims": 2,
+    "network_type": "scale_free",
+    "network_params": {
+        "m": 3
+    },
+    "enable_feedback": false,
+    "align_freq": 10,
+    "opinion_mean": 0.0,
+    "opinion_std": 0.7,
+    "extra_media_edges": 10,
+    "extra_self_media_edges": 10,
+    "user_rationality_mean": 0.6,
+    "user_rationality_std": 0.15,
+    "user_affective_involvement_mean": 0.2,
+    "user_affective_involvement_std": 0.1,
+    "user_tolerance_threshold_mean": 0.6,
+    "user_tolerance_threshold_std": 0.15,
+    "self_media_bias_mean": 0.1,
+    "self_media_bias_std": 0.6,
+    "self_media_adjustability_mean": 0.15,
+    "self_media_adjustability_std": 0.07
+}

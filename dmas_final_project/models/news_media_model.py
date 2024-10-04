@@ -96,7 +96,8 @@ class NewsMediaModel(Model):
 
         # DataCollector to track global alignment
         self.datacollector = DataCollector(
-            model_reporters={"Global Alignment": lambda m: m.global_alignment if self.schedule.steps % self.align_freq == 0 else None},
+            model_reporters={"Global Alignment": lambda m: m.global_alignment if self.schedule.steps % self.align_freq == 0 else None,
+                             "Polarization": lambda m: m.compute_polarization()},
             agent_reporters={"Opinion": lambda a: a.opinion if isinstance(a, UserAgent) else None,
                              "Bias": lambda a: a.bias if isinstance(a, SelfNewsAgent) else None,
                              "Alignment":
@@ -105,6 +106,20 @@ class NewsMediaModel(Model):
 
         self.global_alignment = None
         self.principal_components = None
+
+    def compute_polarization(self) -> float:
+        """
+        Compute the polarization of opinions among user agents in the model.
+        Polarization is measured as the variance of the opinion vectors across all user agents.
+        """
+        user_opinions = [agent.opinion for agent in self.schedule.agents if isinstance(agent, UserAgent)]
+        if not user_opinions:
+            return 0  # Return 0 if there are no user agents
+
+        opinions_matrix = np.array(user_opinions)
+        # Calculate variance across all opinion dimensions
+        polarization = np.mean(np.var(opinions_matrix, axis=0))
+        return polarization
 
     def create_network(self) -> nx.Graph:
         """
