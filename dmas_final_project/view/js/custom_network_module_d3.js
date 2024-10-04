@@ -113,9 +113,22 @@ CustomNetworkModule.prototype.render = function(data) {
 CustomNetworkModule.prototype.updateAgentInfo = function(agentData) {
     var self = this;
     self.agent_info_div.innerHTML = `<h3>Agent ID: ${agentData.id}</h3>
-                                     <p>Type: ${agentData.type}</p>
-                                     <p>Opinion: ${agentData.opinion}</p>
-                                     <p>Rationality: ${agentData.rationality}</p>`;
+                                     <p>Type: ${agentData.type}</p>`;
+    if (agentData.bias !== undefined) {
+        self.agent_info_div.innerHTML  += `<p>Bias: ${agentData.bias}</p>`;
+    }
+
+    if (agentData.adjustability !== undefined) {
+        self.agent_info_div.innerHTML  += `<p>Adjustability: ${agentData.adjustability}</p>`;
+    }
+
+    if (agentData.opinion !== undefined) {
+        self.agent_info_div.innerHTML  += `<p>Opinion: ${agentData.opinion}</p>`;
+    }
+
+    if (agentData.rationality !== undefined) {
+        self.agent_info_div.innerHTML  += `<p>Rationality: ${agentData.rationality}</p>`;
+    }
 };
 
 CustomNetworkModule.prototype.reset = function() {

@@ -9,7 +9,6 @@ from typing import Dict, Any
 import networkx as nx
 from mesa import Agent
 import numpy as np
-from flask import jsonify
 
 from dmas_final_project.models.news_media_model import NewsMediaModel
 from mesa.visualization.ModularVisualization import VisualizationElement, D3_JS_FILE
@@ -45,6 +44,7 @@ def network_portrayal(G: nx.Graph) -> Dict[str, Any]:
 
     :return: A dictionary containing lists of node and edge portrayals.
     """
+
     def serialize_attribute(attr):
         if isinstance(attr, np.ndarray):
             return attr.tolist()
@@ -54,7 +54,7 @@ def network_portrayal(G: nx.Graph) -> Dict[str, Any]:
             return int(attr)
         else:
             return attr
-        
+
     def format_decimal(value, decimal_places):
         if isinstance(value, (int, float)):
             return f"{value:.{decimal_places}f}"
@@ -80,19 +80,27 @@ def network_portrayal(G: nx.Graph) -> Dict[str, Any]:
                 "id": node_id_str,
                 "size": 7,  # Example size; you might want to adjust based on agent properties
                 "color": "blue" if isinstance(agent, UserAgent)
-                     else "red" if isinstance(agent, SelfNewsAgent)
-                     else "green",
+                else "red" if isinstance(agent, SelfNewsAgent)
+                else "green",
                 "label": f"ID: {node_id_str}",
                 # Include agent attributes here
                 "agent_data": {
                     "id": agent.unique_id,
                     "type": type(agent).__name__,
-                    "opinion": format_decimal(serialize_attribute(getattr(agent, 'opinion', None)), 3),
-                    "rationality": format_decimal(serialize_attribute(getattr(agent, 'rationality', None)), 3),
                     # Add other attributes as needed
                 },
             })
 
+            if isinstance(agent, UserAgent):
+                node_portrayal["agent_data"].update({
+                    "opinion": format_decimal(serialize_attribute(getattr(agent, 'opinion', None)), 3),
+                    "rationality": format_decimal(serialize_attribute(getattr(agent, 'rationality', None)), 3),
+                })
+            if isinstance(agent, SelfNewsAgent):
+                node_portrayal["agent_data"].update({
+                    "bias": format_decimal(serialize_attribute(getattr(agent, 'bias', None)), 3),
+                    "adjustability": format_decimal(serialize_attribute(getattr(agent, 'adjustability', None)), 3),
+                })
 
             portrayal['nodes'].append(node_portrayal)
 
@@ -138,6 +146,7 @@ class CustomNetworkModule(VisualizationElement):
 
     def render(self, model):
         return self.portrayal_method(model.G)
+
 
 def get_server(params: Dict[str, Any]) -> ModularServer:
     network = CustomNetworkModule(network_portrayal, 500, 500)

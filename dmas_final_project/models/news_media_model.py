@@ -1,5 +1,5 @@
 from mesa import Agent
-from typing import List, Tuple, Any
+from typing import List, Tuple, Any, Optional
 from mesa import Model
 from mesa.space import NetworkGrid
 from mesa.time import RandomActivation
@@ -11,7 +11,7 @@ from sklearn.decomposition import PCA
 from dmas_final_project.agents.user_agent import UserAgent
 from dmas_final_project.agents.official_news_agent import OfficialNewsAgent
 from dmas_final_project.agents.self_news_agent import SelfNewsAgent
-
+import random
 
 class NewsMediaModel(Model):
     """
@@ -22,6 +22,7 @@ class NewsMediaModel(Model):
                  network_type: str, network_params: dict, align_freq: int,
                  extra_media_edges: int, extra_self_media_edges: int,
                  enable_feedback: bool = True,
+                 seed: Optional[int] = None,
                  user_rationality_mean=0.5, user_rationality_std=0.1,
                  user_affective_involvement_mean=0.5, user_affective_involvement_std=0.1,
                  user_tolerance_threshold_mean=0.5, user_tolerance_threshold_std=0.1,
@@ -50,6 +51,9 @@ class NewsMediaModel(Model):
         self.align_freq = align_freq
         self.schedule = RandomActivation(self)
         self.running = True
+
+        random.seed(0)
+        np.random.seed(0)
 
         self.enable_feedback = enable_feedback
 
