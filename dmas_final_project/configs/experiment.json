@@ -7,7 +7,7 @@
     "network_params": {
         "m": 2
     },
-    "enable_feedback": false,
+    "enable_feedback": true,
     "align_freq": 10,
     "opinion_mean": 0.0,
     "opinion_std": 0.7,
