@@ -8,7 +8,7 @@ from dmas_final_project.data_processing.metrics_tracker import MetricsTracker
 from dmas_final_project.models.news_media_model import NewsMediaModel
 
 
-def plot_global_alignment_and_polarization(metric_tracker: MetricsTracker) -> None:
+def plot_metrics(metric_tracker: MetricsTracker) -> None:
     """
     Plot the global alignment and polarization across multiple runs.
 
@@ -26,6 +26,18 @@ def plot_global_alignment_and_polarization(metric_tracker: MetricsTracker) -> No
         metric_name='Polarization',
         file_name='polarization_across_runs.png',
         title='Polarization Across Runs'
+    )
+
+    metric_tracker.plot_metric(
+        metric_name='Homophily Index',
+        file_name='Homophily_Index+acrosss_runs.png',
+        title='Homophily Index Across Runs'
+    )
+
+    metric_tracker.plot_metric(
+        metric_name='Mean Opinion Magnitude',
+        file_name='mean_accross_runs.png',
+        title='Mean Opinion Magnitude Across Runs'
     )
 
 def plot_global_alignment_over_time(datacollector: DataCollector) -> None:

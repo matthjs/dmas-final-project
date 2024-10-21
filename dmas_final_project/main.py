@@ -11,7 +11,7 @@ from dmas_final_project.data_processing.metrics_tracker import MetricsTracker
 from dmas_final_project.models.news_media_model import NewsMediaModel
 from dmas_final_project.parser.parser import parse_arguments, parse_news_media_model
 from dmas_final_project.plotting.plotting import plot_global_alignment_over_time, plot_evolution_by_dimension, \
-    plot_individual_alignment_over_time, plot_polarization, plot_social_network, plot_global_alignment_and_polarization
+    plot_individual_alignment_over_time, plot_polarization, plot_social_network, plot_metrics
 from dmas_final_project.view.view import network_portrayal, get_server
 
 
@@ -27,7 +27,7 @@ def main() -> None:
     elif params['mode'] == 'simulation':
         print("Running simulation...")
 
-        num_runs = 10
+        num_runs = 3
         metric_tracker = MetricsTracker()
         for run in range(num_runs):
             # Make sure to fix the seed so the social network is the same for each run!
@@ -37,7 +37,7 @@ def main() -> None:
                 model.step()
             print("Simulation complete.")
 
-            if run == num_runs:
+            if run == num_runs - 1:
                 plot_social_network(model)
                 plot_global_alignment_over_time(model.datacollector)
                 plot_evolution_by_dimension(model.datacollector, data_column='Opinion', label='Opinion')
@@ -45,7 +45,7 @@ def main() -> None:
                 plot_individual_alignment_over_time(model.datacollector)
                 plot_polarization(model.datacollector)
 
-        plot_global_alignment_and_polarization(metric_tracker)
+        plot_metrics(metric_tracker)
 
 
 if __name__ == "__main__":

@@ -55,8 +55,8 @@ class NewsMediaModel(Model):
         self.schedule = RandomActivation(self)
         self.running = True
 
-        random.seed(0)
-        np.random.seed(0)
+        random.seed(5)
+        np.random.seed(5)
 
         self.enable_feedback = enable_feedback
 
@@ -102,15 +102,24 @@ class NewsMediaModel(Model):
         # Record the metrics in the MetricsTracker
         self.metrics_tracker.register_metric('Global Alignment')
         self.metrics_tracker.register_metric('Polarization')
+        self.metrics_tracker.register_metric('Homophily Index')  # New metric added
+        self.metrics_tracker.register_metric('Mean Opinion Magnitude')  # New metric added
 
         # DataCollector to track global alignment
         self.datacollector = DataCollector(
-            model_reporters={"Global Alignment": lambda m: m.global_alignment if self.schedule.steps % self.align_freq == 0 else None,
-                             "Polarization": lambda m: m.compute_polarization()},
+            model_reporters={
+                "Global Alignment": lambda m: m.global_alignment if m.schedule.steps % m.align_freq == 0 else None,
+                "Polarization": lambda m: m.compute_polarization(),
+                "Homophily Index": lambda m: m.compute_homophily_index(
+                    threshold=0.5) if m.schedule.steps % m.align_freq == 0 else None,  # Compute only at align_freq
+                "Mean Opinion Magnitude": lambda
+                    m: m.compute_magnitude_mean_opinion()
+            },
             agent_reporters={"Opinion": lambda a: a.opinion if isinstance(a, UserAgent) else None,
                              "Bias": lambda a: a.bias if isinstance(a, SelfNewsAgent) else None,
                              "Alignment":
-                                 lambda a: a.alignment if isinstance(a, UserAgent) and self.schedule.steps % self.align_freq == 0 else None}
+                                 lambda a: a.alignment if isinstance(a,
+                                                                     UserAgent) and self.schedule.steps % self.align_freq == 0 else None}
         )
 
         self.global_alignment = None
@@ -132,6 +141,48 @@ class NewsMediaModel(Model):
         # Calculate variance across all opinion dimensions
         polarization = np.mean(np.var(opinions_matrix, axis=0))
         return polarization
+
+    def compute_magnitude_mean_opinion(self) -> float:
+        """
+        Compute the scalar mean opinion as the magnitude of the mean opinion vector across all user agents.
+        This represents the strength of consensus among the population.
+        """
+        user_opinions = [agent.opinion for agent in self.schedule.agents if isinstance(agent, UserAgent)]
+        if not user_opinions:
+            return 0.0  # Return 0 if there are no user agents
+
+        # Calculate the mean opinion vector
+        opinions_matrix = np.array(user_opinions)
+        mean_opinion_vector = np.mean(opinions_matrix, axis=0)
+
+        # Compute the magnitude (Euclidean norm) of the mean opinion vector
+        mean_opinion_magnitude = np.linalg.norm(mean_opinion_vector)
+
+        return mean_opinion_magnitude
+
+    def compute_homophily_index(self, threshold=1) -> float:
+        """
+        Compute the homophily index for user agents based on a cosine similarity threshold.
+        :param threshold: The similarity threshold for counting edges between similar user agents.
+        :return: The homophily index for user agents.
+        """
+        user_agents = [agent for agent in self.schedule.agents if isinstance(agent, UserAgent)]
+        user_edges = [(i, j) for i in user_agents for j in self.grid.get_neighbors(i.pos, include_center=False) if isinstance(j, UserAgent)]
+
+        if len(user_edges) == 0:
+            return 0  # No edges between user agents
+
+        similar_edges = 0
+
+        for i, j in user_edges:
+            # Compute cosine similarity between opinion vectors of user agents i and j
+            similarity = i.compute_similarity(j.opinion)
+            if similarity >= threshold:
+                similar_edges += 1
+
+        # Homophily Index H_rho
+        homophily_index = similar_edges / len(user_edges) if user_edges else 0
+        return homophily_index
 
     def create_network(self) -> nx.Graph:
         """
@@ -178,8 +229,10 @@ class NewsMediaModel(Model):
             opinion = np.clip(opinion, -1, 1)  # Ensure opinions are between -1 and 1
 
             rationality = np.random.normal(self.user_rationality_mean, self.user_rationality_std)
-            affective_involvement = np.random.normal(self.user_affective_involvement_mean, self.user_affective_involvement_std)
-            tolerance_threshold = np.random.normal(self.user_tolerance_threshold_mean, self.user_tolerance_threshold_std)
+            affective_involvement = np.random.normal(self.user_affective_involvement_mean,
+                                                     self.user_affective_involvement_std)
+            tolerance_threshold = np.random.normal(self.user_tolerance_threshold_mean,
+                                                   self.user_tolerance_threshold_std)
             # Ensure values are within the desired range (e.g., [0, 1])
             rationality = np.clip(rationality, 0, 1)
             affective_involvement = np.clip(affective_involvement, 0, 1)
@@ -257,69 +310,25 @@ class NewsMediaModel(Model):
         neighbors = [self.G.nodes[n]['agent'] for n in self.G.neighbors(node_id)]
         return neighbors
 
-    def recognize_motifs(self) -> List[Tuple[UserAgent, UserAgent, UserAgent]]:
-        """
-        Identify triangular motifs in the network to target for opinion guidance.
-
-        :return: List of triangular motifs with high similarity and rationality.
-        """
-        # ML: This may need to be adjusted.
-        motifs = []
-        # Only consider UserAgents for motif recognition
-        user_agents = [a for a in self.schedule.agents if isinstance(a, UserAgent)]
-
-        for user in user_agents:
-            neighbors = [neighbor for neighbor in self.grid.get_neighbors(user.pos, include_center=False) if isinstance(neighbor, UserAgent)]
-
-            if len(neighbors) >= 2:  # Minimum 3 nodes to form a triangle
-                for i in range(len(neighbors)):
-                    for j in range(i + 1, len(neighbors)):
-                        n1 = neighbors[i]
-                        n2 = neighbors[j]
-
-                        if self.G.has_edge(n1.unique_id, n2.unique_id):
-                            # Calculate similarity between user and the two neighbors
-                            similarity = min(user.compute_similarity(n1.opinion), user.compute_similarity(n2.opinion))
-                            if similarity > 0.4:  # Threshold for similarity
-                                motifs.append((user, n1, n2))
-        return motifs
-
-    def apply_guidance(self) -> None:
-        """
-        Apply opinion guidance to identified motifs by connecting them with diverse agents.
-        """
-        motifs = self.recognize_motifs()
-        for motif in motifs:
-            for agent in motif:
-                agent.is_guided = True  # Mark agents in motifs as under guidance
-
-    # BB: do we still even want to implement guidance?
-
-    def step(self) -> None:
+    def step(self):
         """
         Advance the model by one step, apply guidance if necessary, and collect data.
         """
         self.schedule.step()
 
-        # Apply motif-based guidance every 30 steps
-        # if self.schedule.steps % 30 == 0:
-        #     self.apply_guidance()
-
         if self.schedule.steps % self.align_freq == 0:
             self.compute_alignments()
 
-        # Get the latest global alignment and polarization from the datacollector
+        # Collect global alignment and polarization
         global_alignment_data = self.datacollector.get_model_vars_dataframe()
-
         self.datacollector.collect(self)
 
-        # Check if we have any data at all and if the most recent entry is not None
         if not global_alignment_data.empty:
             most_recent_entry = global_alignment_data.iloc[-1]
-
-            # Check for existence of 'Global Alignment' and 'Polarization' values
             global_alignment = most_recent_entry.get("Global Alignment")
             polarization = most_recent_entry.get("Polarization")
+            homophily_index = most_recent_entry.get("Homophily Index")
+            scalar_mean_opinion = most_recent_entry.get('Mean Opinion Magnitude')
 
             if global_alignment is not None:
                 self.metrics_tracker.record_metric('Global Alignment', 'model', self.schedule.steps, global_alignment)
@@ -327,3 +336,8 @@ class NewsMediaModel(Model):
             if polarization is not None:
                 self.metrics_tracker.record_metric('Polarization', 'model', self.schedule.steps, polarization)
 
+            if homophily_index is not None:
+                self.metrics_tracker.record_metric('Homophily Index', 'model', self.schedule.steps, homophily_index)
+
+            if scalar_mean_opinion is not None:
+                self.metrics_tracker.record_metric('Mean Opinion Magnitude', 'model', self.schedule.steps, scalar_mean_opinion)  # New metric recorded
