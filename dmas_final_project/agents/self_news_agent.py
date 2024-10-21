@@ -27,17 +27,23 @@ class SelfNewsAgent(Agent):
     def get_user_feedback(self):
         neighbors = self.model.grid.get_neighbors(self.pos, include_center=False)
 
-        dissonances = []
-        opinion_dim = len(self.bias)  # Assuming self.bias is an M-dimensional vector
+        feedbacks = []
         for neighbor in neighbors:
             if isinstance(neighbor, UserAgent):
-                # Scale dissonance by sqrt(M) to avoid large feedback values in high dimensions
-                dissonance = (-np.linalg.norm(neighbor.opinion - self.bias) /
-                              np.sqrt(opinion_dim) + neighbor.tolerance_threshold)
-                dissonances.append(dissonance)
+                # Calculate cosine similarity between the user's opinion and the news bias
+                similarity = np.dot(neighbor.opinion, self.bias) / (
+                            np.linalg.norm(neighbor.opinion) * np.linalg.norm(self.bias))
 
-        feedback = np.mean(dissonances) if dissonances else 0  # Handle case with no neighbors
-        return feedback
+                # Check if similarity exceeds the user-specific threshold
+                if abs(similarity) >= neighbor.tolerance_threshold:
+                    feedback = similarity  # Use cosine similarity as feedback if above threshold
+                else:
+                    feedback = 0  # No feedback if similarity is below the threshold
+
+                feedbacks.append(feedback)
+
+        # Return the average feedback from all neighbors (users) or 0 if no neighbors
+        return np.mean(feedbacks) if feedbacks else 0
 
     def step(self) -> None:
         """
