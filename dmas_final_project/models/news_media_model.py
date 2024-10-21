@@ -13,6 +13,9 @@ from dmas_final_project.agents.official_news_agent import OfficialNewsAgent
 from dmas_final_project.agents.self_news_agent import SelfNewsAgent
 import random
 
+from dmas_final_project.data_processing.metrics_tracker import MetricsTracker
+
+
 class NewsMediaModel(Model):
     """
     Model representing news media dynamics with user feedback, opinion polarization, and motif-based guidance.
@@ -94,6 +97,12 @@ class NewsMediaModel(Model):
                 print(f"Official media agent {agent.unique_id} has {num_connections} connections.")
         """
 
+        # Initialize the MetricsTracker for global alignment and polarization
+        self.metrics_tracker = MetricsTracker()
+        # Record the metrics in the MetricsTracker
+        self.metrics_tracker.register_metric('Global Alignment')
+        self.metrics_tracker.register_metric('Polarization')
+
         # DataCollector to track global alignment
         self.datacollector = DataCollector(
             model_reporters={"Global Alignment": lambda m: m.global_alignment if self.schedule.steps % self.align_freq == 0 else None,
@@ -106,6 +115,9 @@ class NewsMediaModel(Model):
 
         self.global_alignment = None
         self.principal_components = None
+
+    def set_metrics_tracker(self, metric_tracker):
+        self.metrics_tracker = metric_tracker
 
     def compute_polarization(self) -> float:
         """
@@ -296,4 +308,22 @@ class NewsMediaModel(Model):
         if self.schedule.steps % self.align_freq == 0:
             self.compute_alignments()
 
+        # Get the latest global alignment and polarization from the datacollector
+        global_alignment_data = self.datacollector.get_model_vars_dataframe()
+
         self.datacollector.collect(self)
+
+        # Check if we have any data at all and if the most recent entry is not None
+        if not global_alignment_data.empty:
+            most_recent_entry = global_alignment_data.iloc[-1]
+
+            # Check for existence of 'Global Alignment' and 'Polarization' values
+            global_alignment = most_recent_entry.get("Global Alignment")
+            polarization = most_recent_entry.get("Polarization")
+
+            if global_alignment is not None:
+                self.metrics_tracker.record_metric('Global Alignment', 'model', self.schedule.steps, global_alignment)
+
+            if polarization is not None:
+                self.metrics_tracker.record_metric('Polarization', 'model', self.schedule.steps, polarization)
+

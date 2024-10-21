@@ -1,11 +1,32 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 from mesa import DataCollector
-
 from dmas_final_project.agents.official_news_agent import OfficialNewsAgent
 from dmas_final_project.agents.self_news_agent import SelfNewsAgent
 from dmas_final_project.agents.user_agent import UserAgent
+from dmas_final_project.data_processing.metrics_tracker import MetricsTracker
+from dmas_final_project.models.news_media_model import NewsMediaModel
 
+
+def plot_global_alignment_and_polarization(metric_tracker: MetricsTracker) -> None:
+    """
+    Plot the global alignment and polarization across multiple runs.
+
+    :param model: The NewsMediaModel instance with metrics tracked.
+    """
+    # Plot global alignment
+    metric_tracker.plot_metric(
+        metric_name='Global Alignment',
+        file_name='global_alignment_across_runs.png',
+        title='Global Alignment Across Runs'
+    )
+
+    # Plot polarization
+    metric_tracker.plot_metric(
+        metric_name='Polarization',
+        file_name='polarization_across_runs.png',
+        title='Polarization Across Runs'
+    )
 
 def plot_global_alignment_over_time(datacollector: DataCollector) -> None:
     """
