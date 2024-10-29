@@ -1,3 +1,5 @@
+from collections import defaultdict
+from dmas_final_project.data_processing.data_aggregator import RunDataAggregator
 import matplotlib.pyplot as plt
 import networkx as nx
 from mesa import DataCollector
@@ -6,6 +8,7 @@ from dmas_final_project.agents.self_news_agent import SelfNewsAgent
 from dmas_final_project.agents.user_agent import UserAgent
 from dmas_final_project.data_processing.metrics_tracker import MetricsTracker
 from dmas_final_project.models.news_media_model import NewsMediaModel
+import numpy as np
 
 
 def plot_metrics(metric_tracker: MetricsTracker) -> None:
@@ -39,6 +42,7 @@ def plot_metrics(metric_tracker: MetricsTracker) -> None:
         file_name='mean_accross_runs.svg',
         title='Mean Opinion Magnitude Across Runs'
     )
+
 
 
 def plot_global_alignment_over_time(datacollector: DataCollector) -> None:
@@ -243,3 +247,44 @@ def plot_social_network(model):
     plt.title('Social Network Visualization')
     plt.savefig("graph.png")  # Save the figure
     plt.show()
+
+
+def plot_opinion_frequency(aggregator: RunDataAggregator) -> None:
+    """
+    Plot histograms showing the distribution of opinion strengths in the range [-1, 1]
+    for each dimension, overlaying first and last opinions on the same plot.
+    Automatically adapts to any number of dimensions.
+    """
+    opinions_first_all, opinions_last_all = aggregator.get_aggregated_data()
+
+    # Calculate the averages for the first and last opinions
+    averages_first = calculate_averages(opinions_first_all)
+    averages_last = calculate_averages(opinions_last_all)
+    # Determine all unique dimensions present in the data
+    all_dims = {dim for dimensions in averages_first.values() for dim in dimensions}
+
+    # Loop through each dimension and plot
+    for dim in all_dims:
+        # Extract data for the current dimension
+        dim_first = [value[dim] for value in averages_first.values() if dim in value]
+        dim_last = [value[dim] for value in averages_last.values() if dim in value]
+
+        # Plotting
+        plt.figure(figsize=(8, 6))
+        plt.hist(dim_first, bins=np.linspace(-1, 1, 20), alpha=0.5, label=f'First Opinions - {dim}')
+        plt.hist(dim_last, bins=np.linspace(-1, 1, 20), alpha=0.5, label=f'Last Opinions - {dim}')
+        plt.title(f'Distribution of {dim} Opinions: First vs Last')
+        plt.xlim([-1, 1])
+        plt.xlabel('Opinion Strength')
+        plt.ylabel('Frequency')
+        plt.xticks(np.arange(-1, 1.1, 0.1))
+        plt.legend()
+        plt.show()
+
+    
+def calculate_averages(opinion_data):
+    averages = defaultdict(dict)
+    for agent_id, dimensions in opinion_data.items():
+        for dim, values in dimensions.items():
+            averages[agent_id][dim] = np.mean(values)
+    return averages
