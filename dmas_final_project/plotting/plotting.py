@@ -17,7 +17,7 @@ def plot_metrics(metric_tracker: MetricsTracker) -> None:
     # Plot global alignment
     metric_tracker.plot_metric(
         metric_name='Global Alignment',
-        file_name='global_alignment_across_runs.png',
+        file_name='global_alignment_across_runs.svg',
         title='Global Alignment Across Runs'
     )
 
