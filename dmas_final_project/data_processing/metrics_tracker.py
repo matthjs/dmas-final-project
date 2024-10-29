@@ -167,7 +167,7 @@ class MetricsTracker:
             ax.grid(True)
 
             plt.tight_layout()
-            plt.savefig(file_name, format="svg")
+            plt.savefig(file_name)
 
     def clear_metrics(self) -> None:
         """

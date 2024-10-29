@@ -24,21 +24,22 @@ def plot_metrics(metric_tracker: MetricsTracker) -> None:
     # Plot polarization
     metric_tracker.plot_metric(
         metric_name='Polarization',
-        file_name='polarization_across_runs.png',
+        file_name='polarization_across_runs.svg',
         title='Polarization Across Runs'
     )
 
     metric_tracker.plot_metric(
         metric_name='Homophily Index',
-        file_name='Homophily_Index+acrosss_runs.png',
+        file_name='Homophily_Index+acrosss_runs.svg',
         title='Homophily Index Across Runs'
     )
 
     metric_tracker.plot_metric(
         metric_name='Mean Opinion Magnitude',
-        file_name='mean_accross_runs.png',
+        file_name='mean_accross_runs.svg',
         title='Mean Opinion Magnitude Across Runs'
     )
+
 
 def plot_global_alignment_over_time(datacollector: DataCollector) -> None:
     """
@@ -168,7 +169,8 @@ def plot_evolution_by_dimension(datacollector: DataCollector, data_column: str, 
         plt.show()
 
 
-def plot_polarization(datacollector: DataCollector, file_name: str = "polarization.png", title: str = "Polarization Over Time"):
+def plot_polarization(datacollector: DataCollector, file_name: str = "polarization.png",
+                      title: str = "Polarization Over Time"):
     """
     Plot the polarization over time, as measured by the variance of opinions.
     """
