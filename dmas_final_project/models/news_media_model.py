@@ -286,7 +286,7 @@ class NewsMediaModel(Model):
         c1 = pca.components_[0]
 
         # Variance explained by the first principal component (λ1)
-        lambda_1 = pca.explained_variance_[0]
+        lambda_1 = pca.explained_variance_ratio_[0]
 
         # A(t) = λ1 (the variance explained by the first principal component)
         A_t = lambda_1
