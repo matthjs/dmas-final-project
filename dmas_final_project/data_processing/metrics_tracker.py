@@ -156,18 +156,18 @@ class MetricsTracker:
 
                 # Fill between mean ± standard deviation
                 ax.fill_between(x_values,
-                                np.array(mean_values) - np.array(std_values),
-                                np.array(mean_values) + np.array(std_values),
+                                np.array(mean_values) - 0.1 * np.array(std_values),
+                                np.array(mean_values) + 0.1 * np.array(std_values),
                                 alpha=0.2)
 
             ax.set_title(title if title else f'{metric_name.capitalize()} History')
             ax.set_xlabel(x_axis_label)
             ax.set_ylabel(y_axis_label)
-            ax.legend()
+            # ax.legend()
             ax.grid(True)
 
             plt.tight_layout()
-            plt.savefig(file_name)
+            plt.savefig(file_name, format="svg")
 
     def clear_metrics(self) -> None:
         """
