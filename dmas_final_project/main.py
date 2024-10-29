@@ -27,7 +27,9 @@ def main() -> None:
     elif params['mode'] == 'simulation':
         print("Running simulation...")
 
-        num_runs = 3
+        random.seed(5)
+        np.random.seed(5)
+        num_runs = 2
         metric_tracker = MetricsTracker()
         for run in range(num_runs):
             # Make sure to fix the seed so the social network is the same for each run!
@@ -41,7 +43,7 @@ def main() -> None:
                 plot_social_network(model)
                 plot_global_alignment_over_time(model.datacollector)
                 plot_evolution_by_dimension(model.datacollector, data_column='Opinion', label='Opinion')
-                plot_evolution_by_dimension(model.datacollector, data_column='Bias', label='Bias')
+                # plot_evolution_by_dimension(model.datacollector, data_column='Bias', label='Bias')
                 plot_individual_alignment_over_time(model.datacollector)
                 plot_polarization(model.datacollector)
 

@@ -55,9 +55,6 @@ class NewsMediaModel(Model):
         self.schedule = RandomActivation(self)
         self.running = True
 
-        random.seed(5)
-        np.random.seed(5)
-
         self.enable_feedback = enable_feedback
 
         # Additional graph settings.
