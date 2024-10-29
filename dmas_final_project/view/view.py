@@ -150,10 +150,12 @@ class CustomNetworkModule(VisualizationElement):
 
 def get_server(params: Dict[str, Any]) -> ModularServer:
     network = CustomNetworkModule(network_portrayal, 500, 500)
-    chart = ChartModule([{"Label": "Global Alignment", "Color": "Blue"}])
+    chart1 = ChartModule([{"Label": "Global Alignment", "Color": "Blue"}])
+    chart2 = ChartModule([{"Label": "Polarization", "Color": "Red"}])
+    chart3 = ChartModule([{"Label": "Homophily Index", "Color": "Purple"}])
     server = ModularServer(
         model_cls=NewsMediaModel,
-        visualization_elements=[network, chart],
+        visualization_elements=[network, chart1, chart2, chart3],
         name="News Media Model",
         model_params={
             "enable_feedback": Checkbox('Enable Feedback', value=params["enable_feedback"]),

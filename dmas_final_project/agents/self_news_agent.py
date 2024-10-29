@@ -49,10 +49,12 @@ class SelfNewsAgent(Agent):
         """
         Influence nearby user agents in the network based on the fixed bias.
         """
+        epsilon = 1e-3  # Small constant to prevent bias from getting stuck at zero
+
         if self.enable_feedback:
             # Calculate user feedback to adjust the news bias
             feedback = self.get_user_feedback()
-            self.bias += self.adjustability * feedback * self.bias
+            self.bias += self.adjustability * feedback * self.bias + np.sign(self.bias) * epsilon
             # Ensure the bias remains within [-1, 1] bounds
             self.bias = np.clip(self.bias, -1, 1)
 

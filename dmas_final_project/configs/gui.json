@@ -1,18 +1,18 @@
  {
-    "num_users": 500,
+    "num_users": 50,
     "num_official_media": 1,
-    "num_self_media": 15,
-    "opinion_dims": 3,
+    "num_self_media": 3,
+    "opinion_dims": 2,
     "network_type": "scale_free",
     "network_params": {
-        "m": 3
+        "m": 2
     },
     "enable_feedback": false,
     "align_freq": 5,
     "opinion_mean": 0.0,
     "opinion_std": 0.5,
-    "extra_media_edges": 20,
-    "extra_self_media_edges": 20,
+    "extra_media_edges": 5,
+    "extra_self_media_edges": 5,
     "user_rationality_mean": 0.2,
     "user_rationality_std": 0.05,
     "user_affective_involvement_mean": 0.3,

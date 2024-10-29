@@ -279,9 +279,10 @@ def plot_opinion_frequency(aggregator: RunDataAggregator) -> None:
         plt.ylabel('Frequency')
         plt.xticks(np.arange(-1, 1.1, 0.1))
         plt.legend()
+        plt.savefig(f"opinion_bars_{dim}.svg")
         plt.show()
 
-    
+
 def calculate_averages(opinion_data):
     averages = defaultdict(dict)
     for agent_id, dimensions in opinion_data.items():
