@@ -1,13 +1,13 @@
 import argparse
 import json
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 import networkx as nx
 from mesa.space import NetworkGrid
 
 from dmas_final_project.models.news_media_model import NewsMediaModel
 
 
-def parse_arguments() -> Dict[str, Any]:
+def parse_arguments() -> Tuple[Dict[str, Any], argparse.Namespace]:
     """
     Parse command-line arguments for running the NewsMediaModel.
 
@@ -27,6 +27,8 @@ def parse_arguments() -> Dict[str, Any]:
     parser.add_argument('--steps', type=int, default=100,
                         help="Number of steps to run in 'simulation' mode. Default is 100.")
 
+    parser.add_argument('--plot_path', type=str, required=False, default="")
+
     args = parser.parse_args()
 
     # Load configuration parameters from JSON file
@@ -43,7 +45,7 @@ def parse_arguments() -> Dict[str, Any]:
     config_params['steps'] = args.steps
     config_params['network'] = network
 
-    return config_params
+    return config_params, args
 
 
 def parse_news_media_model(params: Dict[str, Any]) -> NewsMediaModel:

@@ -9,9 +9,10 @@ from dmas_final_project.agents.user_agent import UserAgent
 from dmas_final_project.data_processing.metrics_tracker import MetricsTracker
 from dmas_final_project.models.news_media_model import NewsMediaModel
 import numpy as np
+import os
 
 
-def plot_metrics(metric_tracker: MetricsTracker) -> None:
+def plot_metrics(metric_tracker: MetricsTracker, path) -> None:
     """
     Plot the global alignment and polarization across multiple runs.
 
@@ -20,26 +21,26 @@ def plot_metrics(metric_tracker: MetricsTracker) -> None:
     # Plot global alignment
     metric_tracker.plot_metric(
         metric_name='Global Alignment',
-        file_name='global_alignment_across_runs.svg',
+        file_name=os.path.join(path, 'global_alignment_across_runs.svg'),
         title='Global Alignment Across Runs'
     )
 
     # Plot polarization
     metric_tracker.plot_metric(
         metric_name='Polarization',
-        file_name='polarization_across_runs.svg',
+        file_name=os.path.join(path, 'polarization_across_runs.svg'),
         title='Polarization Across Runs'
     )
 
     metric_tracker.plot_metric(
         metric_name='Homophily Index',
-        file_name='Homophily_Index+acrosss_runs.svg',
+        file_name=os.path.join(path, 'Homophily_Index+acrosss_runs.svg'),
         title='Homophily Index Across Runs'
     )
 
     metric_tracker.plot_metric(
         metric_name='Mean Opinion Magnitude',
-        file_name='mean_accross_runs.svg',
+        file_name=os.path.join(path, 'mean_accross_runs.svg'),
         title='Mean Opinion Magnitude Across Runs'
     )
 
@@ -249,17 +250,26 @@ def plot_social_network(model):
     plt.show()
 
 
-def plot_opinion_frequency(aggregator: RunDataAggregator) -> None:
+def plot_opinion_or_bias_frequency(aggregator: RunDataAggregator, metric_type: str, path: str) -> None:
     """
-    Plot histograms showing the distribution of opinion strengths in the range [-1, 1]
-    for each dimension, overlaying first and last opinions on the same plot.
-    Automatically adapts to any number of dimensions.
-    """
-    opinions_first_all, opinions_last_all = aggregator.get_aggregated_data()
+    Plot histograms showing the distribution of opinion or bias strengths in the range [-1, 1]
+    for each dimension, overlaying first and last metrics on the same plot.
 
-    # Calculate the averages for the first and last opinions
-    averages_first = calculate_averages(opinions_first_all)
-    averages_last = calculate_averages(opinions_last_all)
+    :param aggregator: The RunDataAggregator instance containing the aggregated data.
+    :param metric_type: The type of metric to plot ('opinion' or 'bias').
+    """
+    # Get aggregated data based on the selected metric type
+    aggregated_data = aggregator.get_aggregated_data()
+    if metric_type == 'opinion':
+        first_data_all, last_data_all = aggregated_data["first_step_opinions"], aggregated_data["last_step_opinions"]
+    elif metric_type == 'bias':
+        first_data_all, last_data_all = aggregated_data["first_step_biases"], aggregated_data["last_step_biases"]
+    else:
+        raise ValueError("Invalid metric type. Choose 'opinion' or 'bias'.")
+
+    # Calculate the averages for the first and last data
+    averages_first = calculate_averages(first_data_all)
+    averages_last = calculate_averages(last_data_all)
     # Determine all unique dimensions present in the data
     all_dims = {dim for dimensions in averages_first.values() for dim in dimensions}
 
@@ -271,15 +281,15 @@ def plot_opinion_frequency(aggregator: RunDataAggregator) -> None:
 
         # Plotting
         plt.figure(figsize=(8, 6))
-        plt.hist(dim_first, bins=np.linspace(-1, 1, 20), alpha=0.5, label=f'First Opinions - {dim}')
-        plt.hist(dim_last, bins=np.linspace(-1, 1, 20), alpha=0.5, label=f'Last Opinions - {dim}')
-        plt.title(f'Distribution of {dim} Opinions: First vs Last')
+        plt.hist(dim_first, bins=np.linspace(-1, 1, 20), alpha=0.5, label=f'First {metric_type.capitalize()} - {dim}')
+        plt.hist(dim_last, bins=np.linspace(-1, 1, 20), alpha=0.5, label=f'Last {metric_type.capitalize()} - {dim}')
+        plt.title(f'Distribution of {dim} {metric_type.capitalize()}: First vs Last')
         plt.xlim([-1, 1])
-        plt.xlabel('Opinion Strength')
+        plt.xlabel(f'{metric_type.capitalize()} Strength')
         plt.ylabel('Frequency')
         plt.xticks(np.arange(-1, 1.1, 0.1))
         plt.legend()
-        plt.savefig(f"opinion_bars_{dim}.svg")
+        plt.savefig(os.path.join(path, f"{metric_type}_bars_{dim}.svg"))
         plt.show()
 
 
