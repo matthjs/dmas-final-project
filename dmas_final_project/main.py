@@ -58,7 +58,7 @@ def main() -> None:
 
         random.seed(42)
         np.random.seed(42)
-        num_runs = 50
+        num_runs = 1
         metric_tracker = MetricsTracker()
         aggr = RunDataAggregator()
         for run in range(num_runs):

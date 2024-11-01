@@ -27,7 +27,7 @@ def parse_arguments() -> Tuple[Dict[str, Any], argparse.Namespace]:
     parser.add_argument('--steps', type=int, default=100,
                         help="Number of steps to run in 'simulation' mode. Default is 100.")
 
-    parser.add_argument('--plot_path', type=str, required=False, default="")
+    parser.add_argument('--plot_path', type=str, required=False, default="test")
 
     args = parser.parse_args()
 
