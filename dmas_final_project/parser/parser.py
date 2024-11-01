@@ -3,7 +3,6 @@ import json
 from typing import Dict, Any, Tuple
 import networkx as nx
 from mesa.space import NetworkGrid
-
 from dmas_final_project.models.news_media_model import NewsMediaModel
 
 
@@ -103,7 +102,6 @@ def parse_news_media_model(params: Dict[str, Any]) -> NewsMediaModel:
     # Optional predefined network (if provided)
     network = params.get('network')
 
-    # Instantiate the NewsMediaModel
     model = NewsMediaModel(
         num_users=num_users,
         num_official_media=num_official_media,

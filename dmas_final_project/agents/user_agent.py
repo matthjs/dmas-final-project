@@ -5,7 +5,7 @@ import numpy as np
 class UserAgent(Agent):
     """
     Represents a user with multi-dimensional opinions in a social network.
-    Opinions change based on cognitive dissonance and motif-guided interventions.
+    Opinions change based on cognitive dissonance.
     """
 
     def __init__(self, unique_id: int, model: Model, opinion: np.ndarray, rationality: float,
@@ -18,7 +18,7 @@ class UserAgent(Agent):
         :param opinion: Multi-dimensional opinion vector.
         :param rationality: Level of rationality affecting opinion change speed.
         :param affective_involvement: Emotional involvement level affecting opinion resistance.
-        :param tolerance_threshold: Tolerance level for cognitive dissonance before opinion changes.
+        :param tolerance_threshold: Tolerance level for cognitive dissonance (news feedback) before opinion changes.
         """
         super().__init__(unique_id, model)
         self.opinion = opinion  # Multi-dimensional opinion vector passed as a parameter

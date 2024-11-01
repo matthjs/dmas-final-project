@@ -21,7 +21,7 @@ class OfficialNewsAgent(Agent):
 
     def step(self) -> None:
         """
-        Adjust news bias based on aggregated user feedback.
+        Push 'news vector' to
         """
         neighbors = self.model.grid.get_neighbors(self.pos, include_center=False)
         for neighbor in neighbors:

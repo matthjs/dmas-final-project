@@ -33,7 +33,6 @@ class RunDataAggregator:
         # Store opinions from the first time step
         opinions_first = agent_data.xs(first_step, level='Step')['Opinion'].dropna()
         opinions_last = agent_data.xs(last_step, level='Step')['Opinion'].dropna()
-        print(opinions_last)
 
         # Store biases from the first and last time steps
         biases_first = agent_data.xs(first_step, level='Step')['Bias'].dropna()

@@ -1,6 +1,5 @@
 from mesa import Agent, Model
 import numpy as np
-
 from dmas_final_project.agents.user_agent import UserAgent
 
 
@@ -48,6 +47,7 @@ class SelfNewsAgent(Agent):
     def step(self) -> None:
         """
         Influence nearby user agents in the network based on the fixed bias.
+        If applicable, incorporate feedback.
         """
         epsilon = 1e-3  # Small constant to prevent bias from getting stuck at zero
 

@@ -1,5 +1,5 @@
 from mesa import Agent
-from typing import List, Tuple, Any, Optional
+from typing import List, Any
 from mesa import Model
 from mesa.space import NetworkGrid
 from mesa.time import RandomActivation
@@ -11,21 +11,18 @@ from sklearn.decomposition import PCA
 from dmas_final_project.agents.user_agent import UserAgent
 from dmas_final_project.agents.official_news_agent import OfficialNewsAgent
 from dmas_final_project.agents.self_news_agent import SelfNewsAgent
-import random
-
 from dmas_final_project.data_processing.metrics_tracker import MetricsTracker
 
 
 class NewsMediaModel(Model):
     """
-    Model representing news media dynamics with user feedback, opinion polarization, and motif-based guidance.
+    Model representing news media dynamics with user feedback and opinion dynamics.
     """
 
     def __init__(self, num_users: int, num_official_media: int, num_self_media: int, opinion_dims: int,
                  network_type: str, network_params: dict, align_freq: int,
                  extra_media_edges: int, extra_self_media_edges: int,
                  enable_feedback: bool = True,
-                 seed: Optional[int] = None,
                  user_rationality_mean=0.5, user_rationality_std=0.1,
                  user_affective_involvement_mean=0.5, user_affective_involvement_std=0.1,
                  user_tolerance_threshold_mean=0.5, user_tolerance_threshold_std=0.1,
@@ -83,17 +80,6 @@ class NewsMediaModel(Model):
         # Create agents and place them in the network
         self.create_agents()
 
-        """
-        # Print the number of connections for self-media and official media agents
-        for agent in self.schedule.agents:
-            if isinstance(agent, SelfNewsAgent):
-                num_connections = len(self.G[agent.unique_id])
-                print(f"Self-media agent {agent.unique_id} has {num_connections} connections.")
-            elif isinstance(agent, OfficialNewsAgent):
-                num_connections = len(self.G[agent.unique_id])
-                print(f"Official media agent {agent.unique_id} has {num_connections} connections.")
-        """
-
         # Initialize the MetricsTracker for global alignment and polarization
         self.metrics_tracker = MetricsTracker()
         # Record the metrics in the MetricsTracker
@@ -122,7 +108,7 @@ class NewsMediaModel(Model):
         self.global_alignment = None
         self.principal_components = None
 
-    def set_metrics_tracker(self, metric_tracker):
+    def set_metrics_tracker(self, metric_tracker: MetricsTracker) -> None:
         self.metrics_tracker = metric_tracker
 
     def compute_polarization(self) -> float:
@@ -157,14 +143,15 @@ class NewsMediaModel(Model):
 
         return mean_opinion_magnitude
 
-    def compute_homophily_index(self, threshold=1) -> float:
+    def compute_homophily_index(self, threshold: float) -> float:
         """
-        Compute the homophily index for user agents based on a cosine similarity threshold.
+        Compute the homophily index for user agents based on a similarity threshold.
         :param threshold: The similarity threshold for counting edges between similar user agents.
         :return: The homophily index for user agents.
         """
         user_agents = [agent for agent in self.schedule.agents if isinstance(agent, UserAgent)]
-        user_edges = [(i, j) for i in user_agents for j in self.grid.get_neighbors(i.pos, include_center=False) if isinstance(j, UserAgent)]
+        user_edges = [(i, j) for i in user_agents for j in self.grid.get_neighbors(i.pos, include_center=False) if
+                      isinstance(j, UserAgent)]
 
         if len(user_edges) == 0:
             return 0  # No edges between user agents
@@ -273,43 +260,24 @@ class NewsMediaModel(Model):
             user_agent.compute_alignment(self.principal_components[0])  # Individual alignment is computed
             # based on first principle component.
 
-    def compute_global_alignment(self):
-        # NOTE: The opinion space now contains nan vectors this needs to be fixed.
+    def compute_global_alignment(self) -> tuple:
         opinion_space = np.array(
             [agent.opinion for agent in self.schedule.agents if isinstance(agent, UserAgent)])
 
-        # Perform PCA
         pca = PCA(n_components=self.opinion_dims)
         principal_components = pca.fit_transform(opinion_space)
 
-        # First Principal Component (c1)
-        c1 = pca.components_[0]
-
-        # Variance explained by the first principal component (λ1)
+        # Variance ratio explained by the first principal component
         lambda_1 = pca.explained_variance_ratio_[0]
 
         # A(t) = λ1 (the variance explained by the first principal component)
         A_t = lambda_1
 
-        # print("First Principal Component (c1):", c1)
-        # print("Variance Explained by c1 (A(t) = λ1):", A_t)
-
         return principal_components, A_t
-
-    def get_neighbors(self, agent: Agent) -> List[Agent]:
-        """
-        Get the neighboring agents of a given agent in the network.
-
-        :param agent: The agent whose neighbors are requested.
-        :return: List of neighboring agents.
-        """
-        node_id = agent.unique_id
-        neighbors = [self.G.nodes[n]['agent'] for n in self.G.neighbors(node_id)]
-        return neighbors
 
     def step(self):
         """
-        Advance the model by one step, apply guidance if necessary, and collect data.
+        Advance the model by one step, and collect data.
         """
         self.schedule.step()
 
@@ -337,4 +305,5 @@ class NewsMediaModel(Model):
                 self.metrics_tracker.record_metric('Homophily Index', 'model', self.schedule.steps, homophily_index)
 
             if scalar_mean_opinion is not None:
-                self.metrics_tracker.record_metric('Mean Opinion Magnitude', 'model', self.schedule.steps, scalar_mean_opinion)  # New metric recorded
+                self.metrics_tracker.record_metric('Mean Opinion Magnitude', 'model', self.schedule.steps,
+                                                   scalar_mean_opinion)  # New metric recorded

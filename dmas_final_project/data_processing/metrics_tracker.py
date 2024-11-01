@@ -1,5 +1,4 @@
-import threading
-from typing import Union, SupportsFloat, Any, Dict, Tuple
+from typing import Union, SupportsFloat, Any, Dict
 from collections import defaultdict
 import numpy as np
 from matplotlib import pyplot as plt
