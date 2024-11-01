@@ -8,7 +8,6 @@
 
 ## About The Project
 
-Explanation of Idea:
 A bidirectional interaction model between users and news self-media, considering how user evaluations or complaints affect news self-media and other users opinions;
 
 Interactions between users and media are not just one-directional (from media to users) but bidirectional. This means that users reactions to media content (like evaluations or complaints) would also influence how media agents behave and adjust their content in future interactions. 
